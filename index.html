@@ -3,33 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>佳里奇美醫院 主管共識營</title>
+  <title>114年度 跨院區高階主管共識會議</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --morandi-green: #6E8B7A;
+      --morandi-green-light: #A0B5A6;
+      --tech-blue: #1E90FF;
+    }
+  </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
+
   <!-- 導覽列 -->
-  <nav class="bg-green-700 text-white p-4 flex justify-between">
-    <h1 class="font-bold text-lg">主管共識營</h1>
-    <ul class="flex space-x-4">
-      <li><a href="index.html" class="hover:underline">首頁</a></li>
-      <li><a href="agenda.html" class="hover:underline">議程</a></li>
-      <li><a href="members.html" class="hover:underline">名單</a></li>
-      <li><a href="signin.html" class="hover:underline">簽到退</a></li>
-      <li><a href="venue.html" class="hover:underline">場地</a></li>
-      <li><a href="notice.html" class="hover:underline">注意事項</a></li>
-    </ul>
+  <nav class="bg-[var(--morandi-green)] text-white p-4 shadow-lg">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="font-bold text-xl tracking-wide">🌿 主管共識營</h1>
+      <ul class="flex space-x-6 text-lg">
+        <li><a href="index.html" class="hover:text-[var(--tech-blue)] transition">首頁</a></li>
+        <li><a href="agenda.html" class="hover:text-[var(--tech-blue)]">議程</a></li>
+        <li><a href="members.html" class="hover:text-[var(--tech-blue)]">名單</a></li>
+        <li><a href="signin.html" class="hover:text-[var(--tech-blue)]">簽到退</a></li>
+        <li><a href="venue.html" class="hover:text-[var(--tech-blue)]">場地</a></li>
+        <li><a href="notice.html" class="hover:text-[var(--tech-blue)]">注意事項</a></li>
+      </ul>
+    </div>
   </nav>
 
-  <!-- 首頁內容 -->
-  <section class="p-8 text-center">
-    <h2 class="text-3xl font-bold mb-4">114年度 跨院區高階主管共識會議</h2>
-    <p class="text-lg">時間：2025年9月13日</p>
-    <p class="text-lg">地點：成功大學 綠色魔法學校</p>
+  <!-- Hero 區塊 -->
+  <section class="bg-gradient-to-r from-[var(--morandi-green)] to-[var(--tech-blue)] text-white text-center py-20">
+    <h2 class="text-4xl font-bold mb-4 drop-shadow-lg">114年度 跨院區高階主管共識會議</h2>
+    <p class="text-lg">📅 2025年9月13日 ｜ 📍 成功大學 綠色魔法學校</p>
+  </section>
+
+  <!-- 卡片式資訊 -->
+  <section class="container mx-auto p-10 grid md:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+      <h3 class="text-xl font-bold mb-2 text-[var(--morandi-green)]">議程</h3>
+      <p>查看完整的活動行程安排</p>
+      <a href="agenda.html" class="text-[var(--tech-blue)] font-semibold mt-3 inline-block">前往 →</a>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+      <h3 class="text-xl font-bold mb-2 text-[var(--morandi-green)]">名單</h3>
+      <p>瀏覽邀請名單與分組資訊</p>
+      <a href="members.html" class="text-[var(--tech-blue)] font-semibold mt-3 inline-block">前往 →</a>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+      <h3 class="text-xl font-bold mb-2 text-[var(--morandi-green)]">簽到退</h3>
+      <p>點選表單完成簽到或退場</p>
+      <a href="signin.html" class="text-[var(--tech-blue)] font-semibold mt-3 inline-block">前往 →</a>
+    </div>
   </section>
 
   <!-- Footer -->
-  <footer class="bg-green-700 text-white text-center p-4 mt-8">
-    <p>© 佳里奇美醫院 主管共識營工作小組</p>
+  <footer class="bg-[var(--morandi-green)] text-white text-center p-6 mt-12">
+    <p>© 佳里奇美醫院 主管共識營工作小組 ｜ Designed with ❤️</p>
   </footer>
+
 </body>
 </html>
