@@ -453,7 +453,7 @@
             } catch (error) {
                 console.error("儲存到 Firestore 時發生錯誤:", error);
             }
-        }, 1000); // 延遲 1 秒儲存
+        }, 300); // 延遲 0.3 秒儲存 (原為 1000)
 
 
         // 取得 YYYY-MM-DD 格式的日期字串
