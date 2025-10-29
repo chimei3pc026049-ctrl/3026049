@@ -147,6 +147,10 @@
             
             <!-- 功能按鈕 -->
             <div class="flex space-x-2">
+                <button id="save-data" class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all" disabled>
+                    <i data-lucide="check" class="mr-2 h-5 w-5"></i>
+                    <span id="save-data-text">已儲存</span>
+                </button>
                 <button id="toggle-edit-layout" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
                     <i data-lucide="move" class="mr-2 h-5 w-5"></i>
                     <span id="edit-layout-text">編輯順序</span>
@@ -259,7 +263,8 @@
     -->
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/lucide.min.js"></script>
+    <!-- 修正 1: 將 unpkg.com 換成 cdn.jsdelivr.net，提高 lucide 載入成功率 -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/lucide.min.js"></script>
 
     <!-- 
       Firebase 整合：
@@ -311,6 +316,7 @@
         let userId = null; // 目前使用者 ID
         let unsubscribeSnapshot = null; // 用於停止 snapshot 監聽
         let isDataLoaded = false; // 確保初次載入完成
+        let isDataDirty = false; // 追蹤是否有未儲存的變更
 
         // --- 1. 系統常數 (從您的 PDF 檔案中提取) ---
         
@@ -426,34 +432,67 @@
         const confirmAddDeptBtn = document.getElementById('confirm-add-dept');
         const newDeptNameInput = document.getElementById('new-dept-name');
         const addDeptError = document.getElementById('add-dept-error');
+        // 手動儲存按鈕
+        const saveDataBtn = document.getElementById('save-data');
+        const saveDataText = document.getElementById('save-data-text');
 
 
         // --- 4. 資料處理函式 (Firebase Firestore) ---
 
-        // 防抖 (Debounce) 函式：防止短時間內大量寫入
-        function debounce(func, wait) {
-            let timeout;
-            return function(...args) {
-                const context = this;
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(context, args), wait);
-            };
-        }
+        // (移除) 防抖 (Debounce) 函式
 
-        // 儲存完整資料到 Firestore (使用防抖)
-        const saveDataToFirestore = debounce(async () => {
+        // 儲存完整資料到 Firestore (手動)
+        async function saveDataToFirestore() {
             if (!dbRef || !isDataLoaded) {
                 console.log("Firestore 尚未準備好，儲存動作已暫停。");
-                return; // 尚未初始化或載入完成
+                return; 
             }
-            console.log("正在儲存資料到 Firestore...");
+
+            // 1. 提供儲存中... 的視覺回饋
+            saveDataBtn.disabled = true;
+            saveDataBtn.innerHTML = `<i data-lucide="loader-2" class="mr-2 h-5 w-5 animate-spin"></i> <span>儲存中...</span>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            
+            console.log("正在 (手動) 儲存資料到 Firestore...");
             try {
-                await setDoc(dbRef, dataFromFirestore, { merge: true }); // 使用 merge 確保安全
+                await setDoc(dbRef, dataFromFirestore, { merge: true }); 
                 console.log("資料儲存成功。");
+                
+                // 2. 儲存成功，標記資料為 "乾淨"
+                isDataDirty = false;
+                updateSaveButtonState(); // 按鈕將變為 "已儲存"
+
             } catch (error) {
                 console.error("儲存到 Firestore 時發生錯誤:", error);
+                // 3. 儲存失敗，保持 "dirty" 狀態並提示
+                saveDataBtn.disabled = false; // 讓使用者可以重試
+                saveDataBtn.innerHTML = `<i data-lucide="alert-triangle" class="mr-2 h-5 w-5"></i> <span>儲存失敗</span>`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             }
-        }, 300); // 延遲 0.3 秒儲存 (原為 1000)
+        } 
+        
+        // 更新儲存按鈕的狀態
+        function updateSaveButtonState() {
+            const icon = saveDataBtn.querySelector('i');
+            
+            if (isDataDirty) {
+                saveDataBtn.disabled = false;
+                saveDataBtn.classList.remove('bg-gray-400');
+                saveDataBtn.classList.add('bg-purple-600', 'hover:bg-purple-700');
+                saveDataText.textContent = '儲存變更';
+                icon.setAttribute('data-lucide', 'save');
+            } else {
+                saveDataBtn.disabled = true;
+                saveDataBtn.classList.add('bg-gray-400');
+                saveDataBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+                saveDataText.textContent = '已儲存';
+                icon.setAttribute('data-lucide', 'check');
+            }
+            // 重繪圖示
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
 
 
         // 取得 YYYY-MM-DD 格式的日期字串
@@ -493,8 +532,10 @@
             } else {
                 delete dateData[deptId][shiftId]; // 節省空間
             }
-            // 舊：saveCounts();
-            saveDataToFirestore(); // 新：觸發防抖儲存
+            
+            // 標記為 "dirty" 並更新按鈕
+            isDataDirty = true;
+            updateSaveButtonState();
         }
 
         // --- 5. 渲染函式 (Render) ---
@@ -636,8 +677,9 @@
                     // 更新 dataFromFirestore.layoutOrder
                     const movedItem = dataFromFirestore.layoutOrder.splice(evt.oldIndex, 1)[0];
                     dataFromFirestore.layoutOrder.splice(evt.newIndex, 0, movedItem);
-                    // 儲存新順序
-                    saveDataToFirestore();
+                    // 標記為 "dirty" 並更新按鈕
+                    isDataDirty = true;
+                    updateSaveButtonState();
                 }
             });
         }
@@ -660,8 +702,9 @@
                 toggleEditBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                 toggleEditBtn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
                 icon.setAttribute('data-lucide', 'move');
-                // 舊: saveLayout();
-                saveDataToFirestore(); // 新：觸發防抖儲存
+                // 儲存排序時，我們也標記為 dirty
+                isDataDirty = true;
+                updateSaveButtonState();
             }
             
             // 重繪圖示 (增加安全檢查)
@@ -939,8 +982,11 @@
 
         function resetCurrentDateCounts() {
             delete dataFromFirestore.counts[state.currentDate];
-            // 舊: saveCounts();
-            saveDataToFirestore(); // 新：觸發防抖儲存
+            
+            // 標記為 "dirty" 並更新按鈕
+            isDataDirty = true;
+            updateSaveButtonState();
+
             renderDepartmentGrid();
             updateTotals();
             hideResetModal();
@@ -1016,8 +1062,10 @@
             }
 
             // 4. 儲存並重繪
-            // 舊: saveDepartments(); saveLayout();
-            saveDataToFirestore(); // 新：觸發防抖儲存
+            // 標記為 "dirty" 並更新按鈕
+            isDataDirty = true;
+            updateSaveButtonState();
+            
             renderDepartmentGrid();
             hideAddDeptModal();
         }
@@ -1064,9 +1112,14 @@
             renderDepartmentGrid();
             updateTotals();
             
+            // 剛載入資料時，資料是 "乾淨" 的
+            isDataDirty = false;
+            updateSaveButtonState();
+            
             // 如果是首次載入 (docData 不存在)，立刻儲存一次以建立文件
             if (!docData) {
-                saveDataToFirestore();
+                // 第一次儲存不用等到按按鈕
+                saveDataToFirestore(); 
             }
         }
 
@@ -1080,8 +1133,11 @@
                     // 停止舊的監聽 (如果有)
                     if (unsubscribeSnapshot) unsubscribeSnapshot();
 
-                    // 設定文件路徑
-                    dbRef = doc(db, "artifacts", appId, "users", userId, "mailCounterData");
+                    // 修正 2:
+                    // 錯誤的路徑 (5個分段): doc(db, "artifacts", appId, "users", userId, "mailCounterData");
+                    // 正確的路徑 (6個分段): doc(db, "artifacts", appId, "users", userId, "mailData", "singleton");
+                    // 我們需要一個 collection (mailData) 和一個 document (singleton)
+                    dbRef = doc(db, "artifacts", appId, "users", userId, "mailData", "singleton");
                     
                     // 綁定即時監聽
                     unsubscribeSnapshot = onSnapshot(dbRef, (docSnap) => {
@@ -1168,6 +1224,8 @@
         // 新增單位事件
         cancelAddDeptBtn.addEventListener('click', hideAddDeptModal);
         confirmAddDeptBtn.addEventListener('click', confirmAddDept);
+        // 手動儲存事件
+        saveDataBtn.addEventListener('click', saveDataToFirestore);
         
         // 啟動 Firebase
         initFirebase();
@@ -1175,4 +1233,6 @@
     </script>
 </body>
 </html>
+
+
 
