@@ -4,12 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>院內郵件計數系統</title>
-    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!--
-      註：外部程式庫 (like xlsx, Sortable, lucide)
-      已被移動到 <body> 結尾，以確保它們在主腳本執行前載入。
-    -->
     <style>
         /* 基礎字體與背景 */
         body {
@@ -201,11 +196,9 @@
 </head>
 <body>
 
-    <!-- 頂部導覽列 -->
     <header class="bg-white shadow-sm sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-indigo-600">院內郵件計數系統</h1>
-            <!-- *** 修改：新增操作說明按鈕 *** -->
             <div class="flex items-center space-x-4">
                 <button id="show-instructions-btn" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors flex items-center">
                     <i data-lucide="help-circle" class="mr-1 h-4 w-4"></i>
@@ -219,18 +212,13 @@
         </div>
     </header>
 
-    <!-- *** 新增：計數器頁面包裝器 *** -->
     <div id="counter-page">
-        <!-- 班次選擇分頁 -->
         <nav class="bg-white sticky top-[80px] z-10 shadow-sm">
             <div id="shift-tabs-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto whitespace-nowrap -mb-px">
-                <!-- 班次分頁將由 JS 動態載入 -->
-            </div>
+                </div>
         </nav>
 
-        <!-- 主內容區域：單位格狀網格 -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <!-- 載入指示器 -->
             <div id="loading-indicator">
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -238,19 +226,12 @@
                 </svg>
                 正在載入資料...
             </div>
-            <!-- 錯誤訊息顯示區 -->
             <div id="error-message"></div>
-            <!-- 修改：減少 gap-3 -> gap-2, gap-4 -> gap-3 -->
-            <div id="department-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3 pb-24 hidden"> <!-- 修改：預設隱藏 -->
-                <!-- 單位按鈕將由 JS 動態載入 -->
-            </div>
+            <div id="department-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3 pb-24 hidden"> </div>
         </main>
 
-        <!-- 底部控制列 (固定) -->
         <footer class="control-bar fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200">
-            <!-- *** 修改：調整 flex-wrap 讓按鈕在小螢幕換行 *** -->
             <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-                <!-- 總計資訊 -->
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center space-x-2">
                         <i data-lucide="archive" class="text-indigo-600"></i>
@@ -264,8 +245,6 @@
                     </div>
                 </div>
 
-                <!-- 功能按鈕 -->
-                <!-- *** 修改：調整 flex-wrap 允許換行 *** -->
                 <div class="flex space-x-2 flex-wrap gap-2 justify-end">
                     <button id="save-data" class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all" disabled>
                         <i data-lucide="check" class="mr-2 h-5 w-5"></i>
@@ -279,11 +258,10 @@
                         <i data-lucide="file-spreadsheet" class="mr-2 h-5 w-5"></i>
                         匯出本日
                     </button>
-                    <button id="export-monthly-report" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
-                        <i data-lucide="calendar-days" class="mr-2 h-5 w-5"></i>
-                        月度報表
+                    <button id="export-report-modal-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
+                        <i data-lucide="file-text" class="mr-2 h-5 w-5"></i>
+                        報表下載
                     </button>
-                    <!-- *** 新增：統計分析按鈕 *** -->
                     <button id="show-analysis-modal" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
                         <i data-lucide="pie-chart" class="mr-2 h-5 w-5"></i>
                         統計分析
@@ -296,19 +274,13 @@
             </div>
         </footer>
     </div>
-    <!-- *** 結束：計數器頁面包裝器 *** -->
-
-
-    <!-- *** 新增：操作說明頁面 *** -->
     <div id="instructions-page" class="hidden">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
-            <!-- 返回按鈕 -->
             <button id="back-to-counter-btn" class="mb-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
                 <i data-lucide="arrow-left" class="mr-2 h-5 w-5"></i>
                 返回計數系統
             </button>
             
-            <!-- 說明書內容容器 -->
             <div class="instructions-content">
                 <h1>院內郵件計數系統 - 操作說明書</h1>
                 
@@ -319,27 +291,27 @@
                 <h2>2. 系統畫面概觀</h2>
                 <p>開啟系統後，您會看到一個清晰的操作介面，主要分為四大區塊：</p>
                 <ol>
-                    <li><strong>頂部區域</strong>：
+                    <li>**頂部區域**：
                         <ul>
                             <li>系統標題：「院內郵件計數系統」。</li>
-                            <li><strong>日期選擇器</strong>：顯示目前操作的日期，可點擊更改。</li>
+                            <li>**日期選擇器**：顯示目前操作的日期，可點擊更改。</li>
                         </ul>
                     </li>
-                    <li><strong>班次分頁</strong>：
+                    <li>**班次分頁**：
                         <ul>
                             <li>顯示所有郵件收送班次（如：<code>[送件] 08:15</code>、<code>[收件] 10:00</code> 等）。</li>
-                            <li>點擊可切換不同班次。當前選中的班次會有一條<strong>藍色底線</strong>標示。</li>
+                            <li>點擊可切換不同班次。當前選中的班次會有一條**藍色底線**標示。</li>
                         </ul>
                     </li>
-                    <li><strong>單位格點區</strong>：
+                    <li>**單位格點區**：
                         <ul>
                             <li>以按鈕形式顯示院內所有單位。這裡是您進行計數的主要操作區。</li>
                         </ul>
                     </li>
-                    <li><strong>底部控制列</strong>：
+                    <li>**底部控制列**：
                         <ul>
-                            <li><strong>總計</strong>：即時顯示「本班次總計」和「本日總計」的郵件數量。</li>
-                            <li><strong>功能按鈕</strong>：包含儲存、編輯順序、匯出報表等所有進階操作。</li>
+                            <li>**總計**：即時顯示「本班次總計」和「本日總計」的郵件數量。</li>
+                            <li>**功能按鈕**：包含儲存、編輯順序、匯出報表等所有進階操作。</li>
                         </ul>
                     </li>
                 </ol>
@@ -347,18 +319,18 @@
                 <h2>3. 基本操作：計數 (最常用功能)</h2>
                 <p>這是您每天都會用到的核心功能，操作非常直覺：</p>
                 <ol>
-                    <li><strong>選擇日期與班次</strong>：
+                    <li>**選擇日期與班次**：
                         <ul>
                             <li>**步驟一**：確認頂部的日期是您要記錄的日期。如果不是，點擊日期欄位選擇正確日期。</li>
                             <li>**步驟二**：點擊上方的班次分頁，選擇您正在處理的郵件班次（例如：<code>[送件] 08:15</code>）。</li>
                         </ul>
                     </li>
-                    <li><strong>計數</strong>：
+                    <li>**計數**：
                         <ul>
                             <li>**步驟三**：在單位格點區中，找到對應的單位按鈕（例如：「企劃組」）。</li>
-                            <li><strong>增加數量 (滑鼠左鍵)</strong>：<strong>點擊滑鼠左鍵</strong>，該單位的郵件數量會 **+1**。</li>
-                            <li><strong>減少數量 (滑鼠右鍵)</strong>：<strong>點擊滑鼠右鍵</strong>，該單位的郵件數量會 **-1**（最少會減到 0，不會變負數）。</li>
-                            <li><strong>即時反饋</strong>：每次點擊後，按鈕右上角的<strong>藍色數字徽章</strong>會即時更新數量。底部的「本班次總計」和「本日總計」也會同步更新。</li>
+                            <li>**增加數量 (滑鼠左鍵)**：**點擊滑鼠左鍵**，該單位的郵件數量會 **+1**。</li>
+                            <li>**減少數量 (滑鼠右鍵)**：**點擊滑鼠右鍵**，該單位的郵件數量會 **-1**（最少會減到 0，不會變負數）。</li>
+                            <li>**即時反饋**：每次點擊後，按鈕右上角的**藍色數字徽章**會即時更新數量。底部的「本班次總計」和「本日總計」也會同步更新。</li>
                         </ul>
                     </li>
                 </ol>
@@ -366,105 +338,96 @@
                 <h2>4. 儲存資料 (重要！)</h2>
                 <p>系統不會自動儲存您的每次點擊，請務必手動儲存。</p>
                 <ul>
-                    <li><strong>偵測變更</strong>：當您進行任何計數或調整順序後，底部的「儲存」按鈕會變為<strong>紫色</strong>，顯示「<strong>儲存變更</strong>」。</li>
-                    <li><strong>手動儲存</strong>：<strong>請務必在完成記錄或關閉系統前，點擊此按鈕</strong>，將變更儲存到雲端系統中。</li>
-                    <li><strong>儲存成功</strong>：儲存成功後，按鈕會變回<strong>灰色</strong>，顯示「<strong>已儲存</strong>」，表示您的資料已安全儲存。</li>
-                    <li><strong>儲存失敗</strong>：若儲存過程中斷或失敗，按鈕可能會顯示「儲存失敗」，請檢查網路連線並稍後再試。</li>
+                    <li>**偵測變更**：當您進行任何計數或調整順序後，底部的「儲存」按鈕會變為**紫色**，顯示「**儲存變更**」。</li>
+                    <li>**手動儲存**：**請務必在完成記錄或關閉系統前，點擊此按鈕**，將變更儲存到雲端系統中。</li>
+                    <li>**儲存成功**：儲存成功後，按鈕會變回**灰色**，顯示「**已儲存**」，表示您的資料已安全儲存。</li>
+                    <li>**儲存失敗**：若儲存過程中斷或失敗，按鈕可能會顯示「儲存失敗」，請檢查網路連線並稍後再試。</li>
                 </ul>
 
                 <h2>5. 調整單位順序 (編輯模式)</h2>
                 <p>如果您希望單位按鈕的排列順序更符合您的操作習慣，可以自訂排序：</p>
                 <ol>
-                    <li>點擊底部控制列的黃色按鈕「<strong>編輯順序</strong>」。</li>
+                    <li>點擊底部控制列的黃色按鈕「**編輯順序**」。</li>
                     <li>系統進入編輯模式：
                         <ul>
-                            <li>該按鈕會變為藍色，顯示「<strong>儲存順序</strong>」。</li>
-                            <li>所有單位按鈕會出現<strong>閃爍邊框</strong>，表示它們現在可以被拖曳。</li>
+                            <li>該按鈕會變為藍色，顯示「**儲存順序**」。</li>
+                            <li>所有單位按鈕會出現**閃爍邊框**，表示它們現在可以被拖曳。</li>
                         </ul>
                     </li>
-                    <li><strong>按住</strong> 想要移動的單位按鈕不放，<strong>拖曳</strong> 到您想要的位置後 <strong>放開</strong> 滑鼠。</li>
+                    <li>**按住** 想要移動的單位按鈕不放，**拖曳** 到您想要的位置後 **放開** 滑鼠。</li>
                     <li>重複拖曳，直到所有單位都排列到您滿意的位置。</li>
-                    <li>完成後，再次點擊藍色的「<strong>儲存順序</strong>」按鈕，即可退出編輯模式。</li>
-                    <li>退出編輯模式後，佈局已更新，此時請記得點擊「<strong>儲存變更</strong>」按鈕，將這個新的順序儲存起來。</li>
+                    <li>完成後，再次點擊藍色的「**儲存順序**」按鈕，即可退出編輯模式。</li>
+                    <li>退出編輯模式後，佈局已更新，此時請記得點擊「**儲存變更**」按鈕，將這個新的順序儲存起來。</li>
                 </ol>
                 <p><em>* 注意：「新增單位...」按鈕固定在最後，無法被拖曳。</em></p>
 
                 <h2>6. 新增自訂單位</h2>
                 <p>如果系統預設單位不足（例如需要記錄特定廠商或臨時單位）：</p>
                 <ol>
-                    <li>找到單位格點區最後一個綠色虛線框的按鈕「<strong>新增單位...</strong>」並點擊。
+                    <li>找到單位格點區最後一個綠色虛線框的按鈕「**新增單位...**」並點擊。
                         <p><em>* 注意：必須在非編輯模式下才能點擊。</em></p>
                     </li>
                     <li>系統會跳出一個「新增自訂單位」的視窗。</li>
                     <li>請在「單位名稱」欄位輸入您要新增的單位名稱（例如：「廠商A」）。</li>
-                    <li>點擊「<strong>新增</strong>」按鈕。</li>
+                    <li>點擊「**新增**」按鈕。</li>
                     <li>新的單位按鈕會立刻出現在「新增單位...」按鈕之前。</li>
-                    <li>新增後，別忘了點擊「<strong>儲存變更</strong>」按鈕儲存。</li>
+                    <li>新增後，別忘了點擊「**儲存變更**」按鈕儲存。</li>
                 </ol>
 
                 <h2>7. 匯出報表 (Excel)</h2>
-                <p>系統提供兩種 Excel 報表匯出功能，方便您彙報或存檔：</p>
+                <p>系統提供 Excel 報表匯出功能，方便您彙報或存檔：</p>
                 <ol>
-                    <li><strong>匯出本日</strong>：
+                    <li>**匯出本日**：
                         <ul>
                             <li>確認頂部日期為您想匯出的日期。</li>
-                            <li>點擊底部綠色的「<strong>匯出本日</strong>」按鈕。</li>
+                            <li>點擊底部綠色的「**匯出本日**」按鈕。</li>
                             <li>系統會立即下載一份 Excel 檔案 (<code>院內郵件計數_YYYY-MM-DD.xlsx</code>)，內容是該日所有班次、所有單位的計數明細，格式與紙本相同。</li>
                         </ul>
                     </li>
-                    <li><strong>月度報表</strong>：
+                    <li>**報表下載 (月報表/年報表)**：
                         <ul>
-                            <li>點擊底部藍色的「<strong>月度報表</strong>」按鈕。</li>
-                            <li>跳出視窗後，使用「<strong>選擇月份</strong>」欄位選擇您想匯出的月份（例如：2025年10月）。</li>
-                            <li>點擊「<strong>下載</strong>」按鈕。</li>
-                            <li>系統會下載一份 Excel 檔案 (<code>院內郵件月報表_YYYY-MM.xlsx</code>)，這份檔案更為詳細，包含<strong>兩個工作表</strong>：
-                                <ul>
-                                    <li><strong>月份統計 (工作表1)</strong>：該月份「所有單位」在「所有班次」的「總計」。</li>
-                                    <li><strong>每日明細 (工作表2...)</strong>：該月份有記錄的「每一天」的詳細報表（格式同「匯出本日」）。</li>
-                                </ul>
-                            </li>
+                            <li>點擊底部藍色的「**報表下載**」按鈕。</li>
+                            <li>跳出視窗後，**選擇您要下載的「報表類型 (月報表或年報表)」**。</li>
+                            <li>根據選擇的類型，使用「**選擇月份/年份**」欄位選擇您想匯出的時間。</li>
+                            <li>點擊「**下載**」按鈕。</li>
+                            <li>系統會下載對應的 Excel 檔案。月報表包含**月份統計**和**每日明細**；年報表則包含**年度彙總統計**。</li>
                         </ul>
                     </li>
                 </ol>
                 
-                <!-- *** 修改：新增統計分析的說明 *** -->
                 <h2>8. 產生統計分析 (新功能)</h2>
                 <p>除了匯出原始數據，系統還能自動產生該月份的統計圖表與 AI 分析建議：</p>
-                 <ol>
-                    <li>點擊底部綠色(
-                        <span class="inline-flex items-center"><i data-lucide="pie-chart" class="h-4 w-4 inline-block mx-1 text-teal-600"></i></span>
-                        )的「<strong>統計分析</strong>」按鈕。</li>
-                    <li>在跳出的視窗中，使用「<strong>選擇月份</strong>」欄位選擇您想分析的月份。</li>
-                    <li>點擊「<strong>產生分析</strong>」按鈕。</li>
-                    <li>系統會彈出一個新的「<strong>月度統計分析報告</strong>」視窗，內容包含：
+                <ol>
+                    <li>點擊底部綠色(<span class="inline-flex items-center"><i data-lucide="pie-chart" class="h-4 w-4 inline-block mx-1 text-teal-600"></i></span>)的「**統計分析**」按鈕。</li>
+                    <li>在跳出的視窗中，使用「**選擇月份**」欄位選擇您想分析的月份。</li>
+                    <li>點擊「**產生分析**」按鈕。</li>
+                    <li>系統會彈出一個新的「**月度統計分析報告**」視窗，內容包含：
                         <ul>
-                            <li><strong>院區收送總覽</strong>：顯示永康和柳營院區的「總送件」、「總收件」以及各班次的件數統計。</li>
-                            <li><strong>單位明細</strong>：以表格顯示各院區、各單位在不同班次的詳細件數。</li>
-                            <li><strong>AI 建議</strong>：系統會自動將當月數據傳送給 AI 進行分析，並提供關於流程優化、件數平衡等方面的具體建議。（此過程可能需要幾秒鐘）</li>
+                            <li>**院區收送總覽**：顯示永康和柳營院區的「總送件」、「總收件」以及各班次的件數統計。</li>
+                            <li>**單位明細**：以表格顯示各院區、各單位在不同班次的詳細件數。</li>
+                            <li>**AI 建議**：系統會自動將當月數據傳送給 AI 進行分析，並提供關於流程優化、件數平衡等方面的具體建議。（此過程可能需要幾秒鐘）</li>
                         </ul>
                     </li>
                 </ol>
 
-                <!-- *** 修改：調整章節編號 *** -->
                 <h2>9. 清空本日資料 (請謹慎使用)</h2>
                 <p>如果您需要清除某一天的所有計數資料（例如日期選錯，完全誤操作）：</p>
                 <ol>
                     <li>確認頂部日期為您想清空的日期。</li>
-                    <li>點擊底部紅色的「<strong>清空本日</strong>」按鈕。</li>
-                    <li>系統會跳出一個<strong>紅色</strong>的確認視窗，再次詢問您是否確定要清空該日期的所有資料。</li>
-                    <li>確認無誤後，點擊「<strong>確定清空</strong>」按鈕。
+                    <li>點擊底部紅色的「**清空本日**」按鈕。</li>
+                    <li>系統會跳出一個**紅色**的確認視窗，再次詢問您是否確定要清空該日期的所有資料。</li>
+                    <li>確認無誤後，點擊「**確定清空**」按鈕。
                         <p><em>* 注意：此操作無法復原，請謹慎使用！</em></p>
                     </li>
                     <li>清空後，該日的計數會全部歸零，系統會自動儲存此變更。</li>
                 </ol>
 
-                <!-- *** 修改：調整章節編號 *** -->
                 <h2>10. 系統載入與異常排除</h2>
                 <ul>
-                    <li><strong>正常載入</strong>：開啟系統時，可能會短暫顯示「<strong>正在載入資料...</strong>」的旋轉圖示，這是正常現象，請稍候片刻。</li>
-                    <li><strong>卡住或空白</strong>：若長時間卡在載入畫面（超過10秒），或畫面顯示錯誤訊息（例如「無法登入 Firebase」）：
+                    <li>**正常載入**：開啟系統時，可能會短暫顯示「**正在載入資料...**」的旋轉圖示，這是正常現象，請稍候片刻。</li>
+                    <li>**卡住或空白**：若長時間卡在載入畫面（超過10秒），或畫面顯示錯誤訊息（例如「無法登入 Firebase」）：
                         <ol>
-                            <li>請先嘗試 <strong>重新整理(F5)</strong> 頁面。</li>
+                            <li>請先嘗試 **重新整理(F5)** 頁面。</li>
                             <li>若重新整理無效，請檢查您的網路連線是否正常。</li>
                             <li>若問題持續存在，請聯繫資訊室或系統管理人員尋求協助。</li>
                         </ol>
@@ -474,11 +437,6 @@
             </div>
         </div>
     </div>
-    <!-- *** 結束：操作說明頁面 *** -->
-
-
-    <!-- Modals (共用) -->
-    <!-- 新增單位 Modal (預設隱藏) -->
     <div id="add-dept-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
             <div class="flex items-center">
@@ -508,37 +466,53 @@
         </div>
     </div>
 
-    <!-- 月度報表 Modal (預設隱藏) -->
-    <div id="monthly-report-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div id="report-download-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
             <div class="flex items-center">
                 <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <i data-lucide="calendar-days" class="h-6 w-6 text-blue-600"></i>
+                    <i data-lucide="file-text" class="h-6 w-6 text-blue-600"></i>
                 </div>
                 <h3 class="ml-3 text-lg leading-6 font-medium text-gray-900">
-                    下載月度報表
+                    報表下載
                 </h3>
             </div>
             <p class="mt-2 text-sm text-gray-500">
-                請選擇您要匯出的月份。將會下載一份包含該月「彙總統計」與「每日明細」的 Excel 檔案。
+                請選擇您要匯出的報表類型與時間範圍。
             </p>
-            <div class="mt-4">
-                <label for="month-input" class="block text-sm font-medium text-gray-700">選擇月份</label>
-                <input type="month" id="month-input" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <p id="monthly-report-error" class="text-red-600 text-sm mt-1 hidden"></p>
+            
+            <div class="mt-4 space-y-4">
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">選擇報表類型</label>
+                    <div class="flex items-center space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="report-type" id="report-type-month" value="month" class="form-radio text-blue-600 h-4 w-4" checked>
+                            <span class="ml-2 text-gray-700">月報表</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="report-type" id="report-type-year" value="year" class="form-radio text-blue-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">年報表</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="report-period-input" id="report-period-label" class="block text-sm font-medium text-gray-700">選擇月份</label>
+                    <input type="month" id="report-period-input" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <p id="report-download-error" class="text-red-600 text-sm mt-1 hidden"></p>
+                </div>
             </div>
+
             <div class="mt-4 flex justify-end space-x-3">
-                <button id="cancel-monthly-report" type="button" class="bg-white hover:bg-gray-50 border border-gray-300 rounded-md shadow-sm py-2 px-4 text-sm font-medium text-gray-700">
+                <button id="cancel-report-download" type="button" class="bg-white hover:bg-gray-50 border border-gray-300 rounded-md shadow-sm py-2 px-4 text-sm font-medium text-gray-700">
                     取消
                 </button>
-                <button id="confirm-monthly-report" type="button" class="bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white">
+                <button id="confirm-report-download" type="button" class="bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white">
                     下載
                 </button>
             </div>
         </div>
     </div>
     
-    <!-- *** 新增：統計分析月份選擇 Modal (預設隱藏) *** -->
     <div id="analysis-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
             <div class="flex items-center">
@@ -568,10 +542,8 @@
         </div>
     </div>
     
-    <!-- *** 新增：分析結果 Modal (預設隱藏) *** -->
     <div id="analysis-results-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden p-4">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-4xl w-full max-h-[90vh] flex flex-col">
-            <!-- 標題 -->
             <div class="flex items-center justify-between pb-3 border-b">
                 <div class="flex items-center">
                     <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-teal-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -586,40 +558,29 @@
                 </button>
             </div>
             
-            <!-- 載入指示器 -->
             <div id="analysis-loading" class="flex flex-col items-center justify-center py-12">
                 <i data-lucide="loader-2" class="h-12 w-12 text-teal-600 animate-spin"></i>
                 <p class="mt-4 text-gray-600">正在產生分析報告，請稍候...</p>
             </div>
 
-            <!-- 結果內容 (可滾動) -->
             <div id="analysis-content" class="mt-4 overflow-y-auto hidden space-y-6">
-                <!-- 區塊 1: 院區總覽 -->
                 <div id="analysis-section-1">
                     <h4 class="text-xl font-semibold text-gray-800 mb-3">1. 院區收送總覽</h4>
-                    <!-- 內容將由 JS 填入 -->
-                </div>
-                <!-- 區塊 2: 單位明細 -->
+                    </div>
                 <div id="analysis-section-2">
                     <h4 class="text-xl font-semibold text-gray-800 mb-3">2. 單位明細</h4>
-                    <!-- 內容將由 JS 填入 -->
-                </div>
-                <!-- 區塊 3: AI 建議 -->
+                    </div>
                 <div id="analysis-section-3">
                     <h4 class="text-xl font-semibold text-gray-800 mb-3">3. AI 建議</h4>
-                    <!-- AI 載入 -->
                     <div id="ai-suggestion-loading" class="flex items-center text-gray-500">
                         <i data-lucide="loader-2" class="h-5 w-5 mr-2 animate-spin"></i>
                         AI 正在分析數據並產生建議...
                     </div>
-                    <!-- AI 內容 -->
                     <div id="ai-suggestion-content" class="text-gray-700 max-w-none">
-                        <!-- 內容將由 JS 填入 -->
-                    </div>
+                        </div>
                 </div>
             </div>
 
-            <!-- 底部按鈕 (僅關閉) -->
             <div class="mt-6 pt-4 border-t flex justify-end">
                 <button id="close-analysis-results-bottom" type="button" class="bg-white hover:bg-gray-50 border border-gray-300 rounded-md shadow-sm py-2 px-4 text-sm font-medium text-gray-700">
                     關閉
@@ -629,7 +590,6 @@
     </div>
 
 
-    <!-- 重設確認 Modal (預設隱藏) -->
     <div id="reset-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
             <div class="flex items-center">
@@ -654,9 +614,6 @@
         </div>
     </div>
 
-    <!--
-      外部程式庫腳本
-    -->
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/lucide.min.js"></script>
@@ -680,35 +637,35 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- 0. Firebase 設定與初始化 ---
-        console.log("腳本開始執行..."); 
+        console.log("腳本開始執行...");
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        console.log("App ID:", appId); 
+        console.log("App ID:", appId);
         const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
         let firebaseConfig;
         if (firebaseConfigString) {
-             console.log("正在解析 __firebase_config..."); 
-             try {
-                 firebaseConfig = JSON.parse(firebaseConfigString);
-                 console.log("Firebase 設定:", firebaseConfig); 
-             } catch (e) {
-                  console.error("解析 __firebase_config 失敗:", e);
-                  displayError("Firebase 設定無效，無法載入資料。");
-                  firebaseConfig = null; 
-             }
+            console.log("正在解析 __firebase_config...");
+            try {
+                firebaseConfig = JSON.parse(firebaseConfigString);
+                console.log("Firebase 設定:", firebaseConfig);
+            } catch (e) {
+                console.error("解析 __firebase_config 失敗:", e);
+                displayError("Firebase 設定無效，無法載入資料。");
+                firebaseConfig = null;
+            }
         } else {
-             console.warn("未找到 __firebase_config，將使用備用設定。"); 
-             firebaseConfig = {
+            console.warn("未找到 __firebase_config，將使用備用設定。");
+            firebaseConfig = {
                 // 備用設定 (請只在測試時使用)
-                apiKey: "AIzaSyDSG0XE2D1Kdptlxl9oD7QPom3fupB6OHQ", 
-                authDomain: "base-9b8b4.firebaseapp.com", 
-                projectId: "base-9b8b4", 
-                storageBucket: "base-9b8b4.appspot.com", 
-                messagingSenderId: "865059635319", 
-                appId: "1:865059635319:web:b70d333eb07d0d92288672", 
+                apiKey: "AIzaSyDSG0XE2D1Kdptlxl9oD7QPom3fupB6OHQ",
+                authDomain: "base-9b8b4.firebaseapp.com",
+                projectId: "base-9b8b4",
+                storageBucket: "base-9b8b4.appspot.com",
+                messagingSenderId: "865059635319",
+                appId: "1:865059635319:web:b70d333eb07d0d92288672",
                 measurementId: "G-SCWE70JXFK"
-             };
-             console.log("備用 Firebase 設定:", firebaseConfig); 
+            };
+            console.log("備用 Firebase 設定:", firebaseConfig);
         }
 
         let app;
@@ -716,31 +673,31 @@
         let db;
         if (firebaseConfig) {
             try {
-                 console.log("正在初始化 Firebase..."); 
-                 app = initializeApp(firebaseConfig);
-                 auth = getAuth(app);
-                 db = getFirestore(app);
-                 // setLogLevel('Debug'); 
-                 console.log("Firebase 初始化成功");
+                console.log("正在初始化 Firebase...");
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                // setLogLevel('Debug');
+                console.log("Firebase 初始化成功");
             } catch (error) {
-                 console.error("Firebase 初始化失敗:", error);
-                 displayError("無法初始化資料庫連線，請檢查 Firebase 設定或網路連線。錯誤：" + error.message);
-                 app = null;
-                 auth = null;
-                 db = null;
+                console.error("Firebase 初始化失敗:", error);
+                displayError("無法初始化資料庫連線，請檢查 Firebase 設定或網路連線。錯誤：" + error.message);
+                app = null;
+                auth = null;
+                db = null;
             }
         } else {
-             displayError("缺少有效的 Firebase 設定，無法繼續。");
-             app = null;
-             auth = null;
-             db = null;
+            displayError("缺少有效的 Firebase 設定，無法繼續。");
+            app = null;
+            auth = null;
+            db = null;
         }
 
-        let dbRef = null; 
-        let userId = null; 
-        let unsubscribeSnapshot = null; 
-        let isDataLoaded = false; 
-        let isDataDirty = false; 
+        let dbRef = null;
+        let userId = null;
+        let unsubscribeSnapshot = null;
+        let isDataLoaded = false;
+        let isDataDirty = false;
 
         // --- 1. 系統常數 ---
         const SHIFTS = [
@@ -775,10 +732,10 @@
 
         // --- 2. 應用程式狀態 ---
         let state = {
-            currentDate: '', 
+            currentDate: '',
             activeShiftId: SHIFTS[0].id,
             isEditMode: false,
-            currentPage: 'counter', // *** 新增：追蹤目前頁面 ***
+            currentPage: 'counter', // 追蹤目前頁面
         };
 
         let dataFromFirestore = {
@@ -787,7 +744,7 @@
             layoutOrder: DEFAULT_DEPARTMENTS.map(d => d.id)
         };
 
-        let sortableInstance = null; 
+        let sortableInstance = null;
 
         // --- 3. DOM 節點 ---
         const shiftTabsContainer = document.getElementById('shift-tabs-container');
@@ -803,12 +760,18 @@
         const cancelResetBtn = document.getElementById('cancel-reset');
         const confirmResetBtn = document.getElementById('confirm-reset');
         const resetDateDisplay = document.getElementById('reset-date-display');
-        const monthlyReportBtn = document.getElementById('export-monthly-report');
-        const monthlyReportModal = document.getElementById('monthly-report-modal');
-        const cancelMonthlyReportBtn = document.getElementById('cancel-monthly-report');
-        const confirmMonthlyReportBtn = document.getElementById('confirm-monthly-report');
-        const monthInput = document.getElementById('month-input');
-        const monthlyReportError = document.getElementById('monthly-report-error');
+        
+        // *** MODIFICATION: 報表下載相關 DOM 節點變更 ***
+        const exportReportModalBtn = document.getElementById('export-report-modal-btn'); // 原: monthlyReportBtn
+        const reportDownloadModal = document.getElementById('report-download-modal'); // 原: monthlyReportModal
+        const cancelReportDownloadBtn = document.getElementById('cancel-report-download'); // 原: cancelMonthlyReportBtn
+        const confirmReportDownloadBtn = document.getElementById('confirm-report-download'); // 原: confirmMonthlyReportBtn
+        const reportPeriodInput = document.getElementById('report-period-input'); // 原: monthInput
+        const reportPeriodLabel = document.getElementById('report-period-label'); // 新增
+        const reportDownloadError = document.getElementById('report-download-error'); // 原: monthlyReportError
+        const reportTypeMonth = document.getElementById('report-type-month'); // 新增
+        const reportTypeYear = document.getElementById('report-type-year'); // 新增
+        
         const addDeptModal = document.getElementById('add-dept-modal');
         const cancelAddDeptBtn = document.getElementById('cancel-add-dept');
         const confirmAddDeptBtn = document.getElementById('confirm-add-dept');
@@ -818,13 +781,14 @@
         const saveDataText = document.getElementById('save-data-text');
         const loadingIndicator = document.getElementById('loading-indicator');
         const errorMessageDiv = document.getElementById('error-message');
-        // *** 新增：頁面導覽 DOM ***
+        
+        // 頁面導覽 DOM
         const showInstructionsBtn = document.getElementById('show-instructions-btn');
         const instructionsPage = document.getElementById('instructions-page');
         const counterPage = document.getElementById('counter-page');
         const backToCounterBtn = document.getElementById('back-to-counter-btn');
         
-        // *** 新增：分析 Modal DOM ***
+        // 分析 Modal DOM
         const showAnalysisModalBtn = document.getElementById('show-analysis-modal');
         const analysisModal = document.getElementById('analysis-modal');
         const cancelAnalysisModalBtn = document.getElementById('cancel-analysis-modal');
@@ -848,98 +812,91 @@
         // --- 4. 資料處理函式 (Firebase Firestore) ---
 
         async function saveDataToFirestore() {
-            // ... (saveDataToFirestore 函數內容不變) ...
-             console.log("saveDataToFirestore 函數被呼叫"); 
-             if (!dbRef || !isDataLoaded) {
-                 console.log("Firestore 尚未準備好或資料未載入，儲存動作已暫停。 dbRef:", dbRef, "isDataLoaded:", isDataLoaded); 
-                 displayError("無法儲存，資料尚未完全載入或連線失敗。"); 
-                 return;
-             }
+            console.log("saveDataToFirestore 函數被呼叫");
+            if (!dbRef || !isDataLoaded) {
+                console.log("Firestore 尚未準備好或資料未載入，儲存動作已暫停。 dbRef:", dbRef, "isDataLoaded:", isDataLoaded);
+                displayError("無法儲存，資料尚未完全載入或連線失敗。");
+                return;
+            }
 
-             saveDataBtn.disabled = true;
-             saveDataBtn.innerHTML = `<i data-lucide="loader-2" class="mr-2 h-5 w-5 animate-spin"></i> <span>儲存中...</span>`;
-             if (typeof lucide !== 'undefined') lucide.createIcons();
+            saveDataBtn.disabled = true;
+            saveDataBtn.innerHTML = `<i data-lucide="loader-2" class="mr-2 h-5 w-5 animate-spin"></i> <span>儲存中...</span>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
 
-             console.log("正在 (手動) 儲存資料到 Firestore...", dataFromFirestore); 
-             try {
-                 await setDoc(dbRef, dataFromFirestore, { merge: true });
-                 console.log("資料儲存成功。");
-                 isDataDirty = false;
-                 updateSaveButtonState(); 
-
-             } catch (error) {
-                 console.error("儲存到 Firestore 時發生錯誤:", error);
-                 saveDataBtn.disabled = false; 
-                 saveDataBtn.innerHTML = `<i data-lucide="alert-triangle" class="mr-2 h-5 w-5"></i> <span>儲存失敗</span>`;
-                 if (typeof lucide !== 'undefined') lucide.createIcons();
-                 displayError("儲存資料失敗，請稍後再試。錯誤：" + error.message); 
-             }
+            console.log("正在 (手動) 儲存資料到 Firestore...", dataFromFirestore);
+            try {
+                await setDoc(dbRef, dataFromFirestore, { merge: true });
+                console.log("資料儲存成功。");
+                isDataDirty = false;
+                updateSaveButtonState();
+            } catch (error) {
+                console.error("儲存到 Firestore 時發生錯誤:", error);
+                saveDataBtn.disabled = false;
+                saveDataBtn.innerHTML = `<i data-lucide="alert-triangle" class="mr-2 h-5 w-5"></i> <span>儲存失敗</span>`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                displayError("儲存資料失敗，請稍後再試。錯誤：" + error.message);
+            }
         }
 
         function updateSaveButtonState() {
-            // ... (updateSaveButtonState 函數內容不變) ...
-             const icon = saveDataBtn.querySelector('i');
-             if (!icon) return; 
+            const icon = saveDataBtn.querySelector('i');
+            if (!icon) return;
 
-             if (isDataDirty) {
-                 saveDataBtn.disabled = false;
-                 saveDataBtn.classList.remove('bg-gray-400');
-                 saveDataBtn.classList.add('bg-purple-600', 'hover:bg-purple-700');
-                 saveDataText.textContent = '儲存變更';
-                 icon.setAttribute('data-lucide', 'save');
-             } else {
-                 saveDataBtn.disabled = true;
-                 saveDataBtn.classList.add('bg-gray-400');
-                 saveDataBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
-                 saveDataText.textContent = '已儲存';
-                 icon.setAttribute('data-lucide', 'check');
-             }
-             if (typeof lucide !== 'undefined') {
-                 lucide.createIcons();
-             }
+            if (isDataDirty) {
+                saveDataBtn.disabled = false;
+                saveDataBtn.classList.remove('bg-gray-400');
+                saveDataBtn.classList.add('bg-purple-600', 'hover:bg-purple-700');
+                saveDataText.textContent = '儲存變更';
+                icon.setAttribute('data-lucide', 'save');
+            } else {
+                saveDataBtn.disabled = true;
+                saveDataBtn.classList.add('bg-gray-400');
+                saveDataBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+                saveDataText.textContent = '已儲存';
+                icon.setAttribute('data-lucide', 'check');
+            }
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         }
 
         function getFormattedDate(date) {
-            // ... (getFormattedDate 函數內容不變) ...
-             return date.toISOString().split('T')[0];
+            return date.toISOString().split('T')[0];
         }
 
         function getCountsForDate(date) {
-            // ... (getCountsForDate 函數內容不變) ...
-             if (!dataFromFirestore.counts[date]) {
-                 dataFromFirestore.counts[date] = {};
-             }
-             return dataFromFirestore.counts[date];
+            if (!dataFromFirestore.counts[date]) {
+                dataFromFirestore.counts[date] = {};
+            }
+            return dataFromFirestore.counts[date];
         }
 
         function getCount(date, deptId, shiftId) {
-            // ... (getCount 函數內容不變) ...
-             const dateData = getCountsForDate(date);
+            const dateData = getCountsForDate(date);
             if (!dateData[deptId]) {
-                 dateData[deptId] = {};
+                dateData[deptId] = {};
             }
             return dateData[deptId][shiftId] || 0;
         }
 
         function setCount(date, deptId, shiftId, count) {
-            // ... (setCount 函數內容不變) ...
-             const dateData = getCountsForDate(date);
+            const dateData = getCountsForDate(date);
             if (!dateData[deptId]) {
-                 dateData[deptId] = {};
+                dateData[deptId] = {};
             }
             if (count > 0) {
-                 dateData[deptId][shiftId] = count;
+                dateData[deptId][shiftId] = count;
             } else {
-                 delete dateData[deptId][shiftId];
-                 if (Object.keys(dateData[deptId]).length === 0) {
-                     delete dateData[deptId];
-                 }
+                delete dateData[deptId][shiftId];
+                if (Object.keys(dateData[deptId]).length === 0) {
+                    delete dateData[deptId];
+                }
             }
             isDataDirty = true;
             updateSaveButtonState();
         }
         
-        // --- *** 5. 頁面導覽函式 *** ---
+        // --- 5. 頁面導覽函式 ---
         function navigateTo(pageName) {
             state.currentPage = pageName;
             console.log(`導覽至: ${pageName}`);
@@ -950,13 +907,13 @@
                 counterPage.classList.add('hidden');
                 instructionsPage.classList.remove('hidden');
                 // 確保說明頁面的 lucide 圖示被渲染
-                 // *** 使用 try-catch 增加 robustness ***
+                // 使用 try-catch 增加 robustness
                 if (typeof lucide !== 'undefined' && lucide.createIcons) {
-                     try {
-                         lucide.createIcons();
-                     } catch (e) {
-                          console.error("在說明頁面渲染 Lucide 圖示時出錯:", e);
-                     }
+                    try {
+                        lucide.createIcons();
+                    } catch (e) {
+                        console.error("在說明頁面渲染 Lucide 圖示時出錯:", e);
+                    }
                 }
             }
         }
@@ -964,475 +921,488 @@
         // --- 6. 渲染函式 (Render) ---
 
         function renderShiftTabs() {
-            // ... (renderShiftTabs 函數內容不變) ...
-             if (!shiftTabsContainer) {
-                 console.error("找不到 shift-tabs-container 元素！");
-                 return;
-             }
-             shiftTabsContainer.innerHTML = '';
-             SHIFTS.forEach(shift => {
-                 const tab = document.createElement('button');
-                 tab.className = `shift-tab py-4 px-5 text-sm font-medium text-gray-500 hover:text-gray-700 ${shift.id === state.activeShiftId ? 'active' : ''}`;
-                 tab.dataset.shiftId = shift.id;
+            if (!shiftTabsContainer) {
+                console.error("找不到 shift-tabs-container 元素！");
+                return;
+            }
+            shiftTabsContainer.innerHTML = '';
+            SHIFTS.forEach(shift => {
+                const tab = document.createElement('button');
+                tab.className = `shift-tab py-4 px-5 text-sm font-medium text-gray-500 hover:text-gray-700 ${shift.id === state.activeShiftId ? 'active' : ''}`;
+                tab.dataset.shiftId = shift.id;
 
-                 const typeColor = shift.type === '送件' ? 'text-blue-600' : 'text-green-600';
-                 tab.innerHTML = `
-                     <span class="font-bold ${typeColor}">[${shift.type}]</span>
-                     <span class="ml-2">${shift.time}</span>
-                     <span class="ml-1 text-xs text-gray-400">(${shift.route})</span>
-                 `;
+                const typeColor = shift.type === '送件' ? 'text-blue-600' : 'text-green-600';
+                tab.innerHTML = `
+                    <span class="font-bold ${typeColor}">[${shift.type}]</span>
+                    <span class="ml-2">${shift.time}</span>
+                    <span class="ml-1 text-xs text-gray-400">(${shift.route})</span>
+                `;
 
-                 tab.addEventListener('click', () => {
-                     console.log(`班次切換至: ${shift.id}`); 
-                     state.activeShiftId = shift.id;
-                     renderShiftTabs(); 
-                     renderDepartmentGrid(); 
-                     updateTotals();
-                 });
-                 shiftTabsContainer.appendChild(tab);
-             });
+                tab.addEventListener('click', () => {
+                    console.log(`班次切換至: ${shift.id}`);
+                    state.activeShiftId = shift.id;
+                    renderShiftTabs();
+                    renderDepartmentGrid();
+                    updateTotals();
+                });
+                shiftTabsContainer.appendChild(tab);
+            });
         }
 
         function renderDepartmentGrid() {
-            // ... (renderDepartmentGrid 函數內容不變) ...
-             console.log("渲染單位網格..."); 
-             if (!departmentGrid || !loadingIndicator || !errorMessageDiv) {
-                 console.error("找不到 department-grid, loading-indicator 或 error-message 元素！");
-                 displayError("頁面元件遺失，無法正常顯示單位列表。"); 
-                 return;
-             }
-             departmentGrid.innerHTML = '';
-             const date = state.currentDate;
-             console.log(`使用日期 ${date} 的資料渲染單位網格`); 
+            console.log("渲染單位網格...");
+            if (!departmentGrid || !loadingIndicator || !errorMessageDiv) {
+                console.error("找不到 department-grid, loading-indicator 或 error-message 元素！");
+                displayError("頁面元件遺失，無法正常顯示單位列表。");
+                return;
+            }
+            departmentGrid.innerHTML = '';
+            const date = state.currentDate;
+            console.log(`使用日期 ${date} 的資料渲染單位網格`);
 
-             if (!dataFromFirestore || !dataFromFirestore.layoutOrder || !dataFromFirestore.departments) {
-                 console.error("缺少 layoutOrder 或 departments 資料，無法渲染網格。");
-                 displayError("單位資料遺失，無法顯示列表。");
-                 return;
-             }
+            if (!dataFromFirestore || !dataFromFirestore.layoutOrder || !dataFromFirestore.departments) {
+                console.error("缺少 layoutOrder 或 departments 資料，無法渲染網格。");
+                displayError("單位資料遺失，無法顯示列表。");
+                return;
+            }
 
-             dataFromFirestore.layoutOrder.forEach(deptId => {
-                 const dept = dataFromFirestore.departments.find(d => d.id === deptId);
-                 if (!dept) {
-                     return; 
-                 }
+            dataFromFirestore.layoutOrder.forEach(deptId => {
+                const dept = dataFromFirestore.departments.find(d => d.id === deptId);
+                if (!dept) {
+                    return;
+                }
 
-                 if (dept.id === 'DYN_ADD') {
-                     const button = document.createElement('button');
-                     button.className = 'dept-btn bg-green-50 hover:bg-green-100 border-2 border-green-300 border-dashed rounded-lg p-3 text-center transition-all h-20 flex items-center justify-center text-green-600 font-medium';
-                     button.innerHTML = `<i data-lucide="plus" class="mr-2 h-5 w-5"></i> ${dept.name}`;
-                     button.addEventListener('click', () => {
-                         if (state.isEditMode) return; 
-                         showAddDeptModal();
-                     });
-                     departmentGrid.appendChild(button);
-                     return; 
-                 }
+                if (dept.id === 'DYN_ADD') {
+                    const button = document.createElement('button');
+                    button.className = 'dept-btn bg-green-50 hover:bg-green-100 border-2 border-green-300 border-dashed rounded-lg p-3 text-center transition-all h-20 flex items-center justify-center text-green-600 font-medium';
+                    button.innerHTML = `<i data-lucide="plus" class="mr-2 h-5 w-5"></i> ${dept.name}`;
+                    button.addEventListener('click', () => {
+                        if (state.isEditMode) return;
+                        showAddDeptModal();
+                    });
+                    departmentGrid.appendChild(button);
+                    return;
+                }
 
-                 const count = getCount(date, dept.id, state.activeShiftId);
-                 const button = document.createElement('button');
-                 button.className = 'dept-btn bg-white rounded-lg p-3 text-center transition-all h-20 flex items-center justify-center';
-                 button.dataset.deptId = dept.id;
-                 button.innerHTML = `
-                     <span class="text-sm font-medium text-gray-800 leading-tight">${dept.name}</span>
-                     <div class="count-badge ${count > 0 ? 'visible' : ''}">
-                         ${count}
-                     </div>
-                 `;
+                const count = getCount(date, dept.id, state.activeShiftId);
+                const button = document.createElement('button');
+                button.className = 'dept-btn bg-white rounded-lg p-3 text-center transition-all h-20 flex items-center justify-center';
+                button.dataset.deptId = dept.id;
+                button.innerHTML = `
+                    <span class="text-sm font-medium text-gray-800 leading-tight">${dept.name}</span>
+                    <div class="count-badge ${count > 0 ? 'visible' : ''}">
+                        ${count}
+                    </div>
+                `;
 
-                 button.addEventListener('click', () => {
-                     if (state.isEditMode) return;
-                     const newCount = getCount(date, dept.id, state.activeShiftId) + 1;
-                     setCount(date, dept.id, state.activeShiftId, newCount);
-                     updateButtonCount(button, newCount);
-                     updateTotals();
-                 });
+                button.addEventListener('click', () => {
+                    if (state.isEditMode) return;
+                    const newCount = getCount(date, dept.id, state.activeShiftId) + 1;
+                    setCount(date, dept.id, state.activeShiftId, newCount);
+                    updateButtonCount(button, newCount);
+                    updateTotals();
+                });
 
-                 button.addEventListener('contextmenu', (e) => {
-                     e.preventDefault();
-                     if (state.isEditMode) return;
-                     let currentCount = getCount(date, dept.id, state.activeShiftId);
-                     if (currentCount > 0) {
-                         const newCount = currentCount - 1;
-                         setCount(date, dept.id, state.activeShiftId, newCount);
-                         updateButtonCount(button, newCount);
-                         updateTotals();
-                     }
-                 });
-                 departmentGrid.appendChild(button);
-             });
+                button.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    if (state.isEditMode) return;
+                    let currentCount = getCount(date, dept.id, state.activeShiftId);
+                    if (currentCount > 0) {
+                        const newCount = currentCount - 1;
+                        setCount(date, dept.id, state.activeShiftId, newCount);
+                        updateButtonCount(button, newCount);
+                        updateTotals();
+                    }
+                });
+                departmentGrid.appendChild(button);
+            });
 
-             if (typeof lucide !== 'undefined' && lucide.createIcons) {
-                 try {
-                     lucide.createIcons();
-                 } catch (e) {
-                     console.error("渲染 Lucide 圖示時出錯:", e);
-                 }
-             } else {
-                 console.warn("Lucide library 未載入或 createIcons 方法不存在");
-             }
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                try {
+                    lucide.createIcons();
+                } catch (e) {
+                    console.error("渲染 Lucide 圖示時出錯:", e);
+                }
+            } else {
+                console.warn("Lucide library 未載入或 createIcons 方法不存在");
+            }
 
-             loadingIndicator.style.display = 'none'; 
-             errorMessageDiv.style.display = 'none'; 
-             departmentGrid.classList.remove('hidden'); 
-             console.log("單位網格渲染完成"); 
+            loadingIndicator.style.display = 'none';
+            errorMessageDiv.style.display = 'none';
+            departmentGrid.classList.remove('hidden');
+            console.log("單位網格渲染完成");
         }
 
         function updateButtonCount(button, count) {
-            // ... (updateButtonCount 函數內容不變) ...
-             const badge = button.querySelector('.count-badge');
-             if (!badge) return; 
-             badge.textContent = count;
-             if (count > 0) {
-                 badge.classList.add('visible');
-             } else {
-                 badge.classList.remove('visible');
-             }
+            const badge = button.querySelector('.count-badge');
+            if (!badge) return;
+            badge.textContent = count;
+            if (count > 0) {
+                badge.classList.add('visible');
+            } else {
+                badge.classList.remove('visible');
+            }
         }
 
         function updateTotals() {
-            // ... (updateTotals 函數內容不變) ...
-             const date = state.currentDate;
-             const dateData = getCountsForDate(date); 
-             let shiftTotal = 0;
-             let dayTotal = 0;
+            const date = state.currentDate;
+            const dateData = getCountsForDate(date);
+            let shiftTotal = 0;
+            let dayTotal = 0;
 
-             Object.values(dateData).forEach(deptShifts => {
-                 Object.entries(deptShifts).forEach(([shiftId, count]) => {
-                     if (shiftId === state.activeShiftId) {
-                         shiftTotal += count;
-                     }
-                     dayTotal += (typeof count === 'number' ? count : 0);
-                 });
-             });
+            Object.values(dateData).forEach(deptShifts => {
+                Object.entries(deptShifts).forEach(([shiftId, count]) => {
+                    if (shiftId === state.activeShiftId) {
+                        shiftTotal += count;
+                    }
+                    dayTotal += (typeof count === 'number' ? count : 0);
+                });
+            });
 
-             if (shiftTotalEl) shiftTotalEl.textContent = shiftTotal;
-             if (dayTotalEl) dayTotalEl.textContent = dayTotal;
+            if (shiftTotalEl) shiftTotalEl.textContent = shiftTotal;
+            if (dayTotalEl) dayTotalEl.textContent = dayTotal;
         }
 
         // --- 7. 拖曳排序功能 ---
         function initSortable() {
-            // ... (initSortable 函數內容不變) ...
-             console.log("初始化 Sortable..."); 
-             if (!departmentGrid) {
-                 console.error("無法初始化 Sortable：找不到 department-grid 元素。");
-                 return; 
-             }
-             if (typeof Sortable === 'undefined') {
-                 console.error("Sortable library 未載入！");
-                 displayError("頁面排序功能載入失敗。");
-                 return;
-             }
-             try {
-                 sortableInstance = new Sortable(departmentGrid, {
-                     animation: 150,
-                     ghostClass: 'sortable-ghost',
-                     chosenClass: 'sortable-chosen',
-                     disabled: !state.isEditMode, 
-                     filter: '.dept-btn[data-dept-id="DYN_ADD"]',
-                     onEnd: (evt) => {
-                         console.log("拖曳結束，更新順序..."); 
-                         const movedItem = dataFromFirestore.layoutOrder.splice(evt.oldIndex, 1)[0];
-                         dataFromFirestore.layoutOrder.splice(evt.newIndex, 0, movedItem);
-                         console.log("新順序:", dataFromFirestore.layoutOrder); 
-                         isDataDirty = true;
-                         updateSaveButtonState();
-                     }
-                 });
-                 console.log("Sortable 初始化成功"); 
-             } catch(error) {
-                 console.error("初始化 Sortable 失敗:", error);
-                 displayError("初始化頁面排序功能時出錯：" + error.message);
-             }
+            console.log("初始化 Sortable...");
+            if (!departmentGrid) {
+                console.error("無法初始化 Sortable：找不到 department-grid 元素。");
+                return;
+            }
+            if (typeof Sortable === 'undefined') {
+                console.error("Sortable library 未載入！");
+                displayError("頁面排序功能載入失敗。");
+                return;
+            }
+            try {
+                sortableInstance = new Sortable(departmentGrid, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    disabled: !state.isEditMode,
+                    filter: '.dept-btn:last-child', // DYN_ADD 永遠是最後一個
+                    onEnd: (evt) => {
+                        console.log("拖曳結束，更新順序...");
+                        const movedItem = dataFromFirestore.layoutOrder.splice(evt.oldIndex, 1)[0];
+                        dataFromFirestore.layoutOrder.splice(evt.newIndex, 0, movedItem);
+                        console.log("新順序:", dataFromFirestore.layoutOrder);
+                        isDataDirty = true;
+                        updateSaveButtonState();
+                    }
+                });
+                console.log("Sortable 初始化成功");
+            } catch(error) {
+                console.error("初始化 Sortable 失敗:", error);
+                displayError("初始化頁面排序功能時出錯：" + error.message);
+            }
         }
 
         function toggleEditMode() {
-            // ... (toggleEditMode 函數內容不變) ...
-             if (!sortableInstance) {
-                 console.warn("Sortable 未初始化，無法切換編輯模式。"); 
-                 return;
-             }
+            if (!sortableInstance) {
+                console.warn("Sortable 未初始化，無法切換編輯模式。");
+                return;
+            }
 
-             state.isEditMode = !state.isEditMode;
-             console.log(`切換編輯模式: ${state.isEditMode}`); 
-             sortableInstance.option('disabled', !state.isEditMode);
+            state.isEditMode = !state.isEditMode;
+            console.log(`切換編輯模式: ${state.isEditMode}`);
+            sortableInstance.option('disabled', !state.isEditMode);
 
-             const icon = toggleEditBtn.querySelector('i');
-             if (!icon) return; 
+            const icon = toggleEditBtn.querySelector('i');
+            if (!icon) return;
 
-             if (state.isEditMode) {
-                 departmentGrid.classList.add('editing-layout');
-                 editLayoutText.textContent = '儲存順序';
-                 toggleEditBtn.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
-                 toggleEditBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                 icon.setAttribute('data-lucide', 'save');
-             } else {
-                 departmentGrid.classList.remove('editing-layout');
-                 editLayoutText.textContent = '編輯順序';
-                 toggleEditBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                 toggleEditBtn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
-                 icon.setAttribute('data-lucide', 'move');
-             }
+            if (state.isEditMode) {
+                departmentGrid.classList.add('editing-layout');
+                editLayoutText.textContent = '儲存順序';
+                toggleEditBtn.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                toggleEditBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                icon.setAttribute('data-lucide', 'save');
+            } else {
+                departmentGrid.classList.remove('editing-layout');
+                editLayoutText.textContent = '編輯順序';
+                toggleEditBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                toggleEditBtn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+                icon.setAttribute('data-lucide', 'move');
+            }
 
-             if (typeof lucide !== 'undefined' && lucide.createIcons) {
-                 try {
-                     lucide.createIcons(); 
-                 } catch(e) { console.error("重繪 Lucide 圖示失敗:", e); }
-             }
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                try {
+                    lucide.createIcons();
+                } catch(e) { console.error("重繪 Lucide 圖示失敗:", e); }
+            }
         }
 
 
         // --- 8. Excel 匯出功能 ---
         function exportToExcel() {
-            // ... (exportToExcel 函數內容不變) ...
-             console.log("匯出本日 Excel..."); 
-             if (typeof XLSX === 'undefined') {
-                 console.error("XLSX library 未載入！");
-                 displayError("無法匯出 Excel，所需元件載入失敗。");
-                 return;
-             }
-             const date = state.currentDate;
-             const dateData = getCountsForDate(date);
-             const twDate = new Date(date);
-             const twYear = twDate.getFullYear() - 1911;
-             const twMonth = twDate.getMonth() + 1;
-             const twDay = twDate.getDate();
-             const title = `佳里奇美醫院 院內郵差件數統計表`;
-             const dateString = `日期： ${twYear}年${twMonth}月${twDay}日`;
+            console.log("匯出本日 Excel...");
+            if (typeof XLSX === 'undefined') {
+                console.error("XLSX library 未載入！");
+                displayError("無法匯出 Excel，所需元件載入失敗。");
+                return;
+            }
+            const date = state.currentDate;
+            const twDate = new Date(date);
+            const twYear = twDate.getFullYear() - 1911;
+            const twMonth = twDate.getMonth() + 1;
+            const twDay = twDate.getDate();
+            const title = `佳里奇美醫院 院內郵差件數統計表`;
+            const dateString = `日期： ${twYear}年${twMonth}月${twDay}日`;
 
-             const header1 = ["", "送件", "", "", "", "收件", "", "", ""];
-             const header2 = ["班別", "08:15", "12:15", "13:00", "15:15", "10:00", "13:00", "14:00", "合計件數"];
-             const header3 = ["", "佳里→永康", "佳里→永康", "佳里→柳營", "佳里→永康", "永康→佳里", "柳營→佳里", "永康→佳里", ""];
+            const header1 = ["", "送件", "", "", "", "收件", "", "", ""];
+            const header2 = ["班別", "08:15", "12:15", "13:00", "15:15", "10:00", "13:00", "14:00", "合計件數"];
+            const header3 = ["", "佳里→永康", "佳里→永康", "佳里→柳營", "佳里→永康", "永康→佳里", "柳營→佳里", "永康→佳里", ""];
 
-             let data = [
-                 [title],
-                 [dateString],
-                 header1,
-                 header2,
-                 header3
-             ];
+            let data = [
+                [title],
+                [dateString],
+                header1,
+                header2,
+                header3
+            ];
 
-             const colTotals = Array(SHIFTS.length).fill(0);
-             let grandTotal = 0;
+            const colTotals = Array(SHIFTS.length).fill(0);
+            let grandTotal = 0;
 
-             dataFromFirestore.layoutOrder.forEach(deptId => {
-                 const dept = dataFromFirestore.departments.find(d => d.id === deptId);
-                 if (!dept || dept.id === 'DYN_ADD') return; 
+            dataFromFirestore.layoutOrder.forEach(deptId => {
+                const dept = dataFromFirestore.departments.find(d => d.id === deptId);
+                if (!dept || dept.id === 'DYN_ADD') return;
 
-                 let rowTotal = 0;
-                 const row = [dept.name];
+                let rowTotal = 0;
+                const row = [dept.name];
 
-                 SHIFTS.forEach((shift, index) => {
-                     const count = getCount(date, dept.id, shift.id);
-                     row.push(count > 0 ? count : ""); 
-                     rowTotal += count;
-                     colTotals[index] += count;
-                 });
+                SHIFTS.forEach((shift, index) => {
+                    const count = getCount(date, dept.id, shift.id);
+                    row.push(count > 0 ? count : "");
+                    rowTotal += count;
+                    colTotals[index] += count;
+                });
 
-                 row.push(rowTotal > 0 ? rowTotal : "");
-                 grandTotal += rowTotal;
-                 data.push(row);
-             });
+                row.push(rowTotal > 0 ? rowTotal : "");
+                grandTotal += rowTotal;
+                data.push(row);
+            });
 
-             const footerRow = ["合計件數"];
-             colTotals.forEach(total => {
-                 footerRow.push(total > 0 ? total : "");
-             });
-             footerRow.push(grandTotal > 0 ? grandTotal : "");
-             data.push(footerRow);
+            const footerRow = ["合計件數"];
+            colTotals.forEach(total => {
+                footerRow.push(total > 0 ? total : "");
+            });
+            footerRow.push(grandTotal > 0 ? grandTotal : "");
+            data.push(footerRow);
 
-             try { 
-                 const ws = XLSX.utils.aoa_to_sheet(data);
-                 ws['!merges'] = [
-                     { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }, 
-                     { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } }, 
-                     { s: { r: 2, c: 1 }, e: { r: 2, c: 4 } }, 
-                     { s: { r: 2, c: 5 }, e: { r: 2, c: 7 } }, 
-                 ];
-                 const wb = XLSX.utils.book_new();
-                 XLSX.utils.book_append_sheet(wb, ws, "郵件計數");
-                 const fileName = `院內郵件計數_${date}.xlsx`;
-                 XLSX.writeFile(wb, fileName);
-                 console.log("Excel 匯出成功:", fileName); 
-             } catch (error) {
-                 console.error("匯出 Excel 失敗:", error);
-                 displayError("匯出 Excel 檔案時發生錯誤：" + error.message);
-             }
-        }
-
-        function exportMonthlyReport(yearMonth) {
-            // ... (exportMonthlyReport 函數內容不變) ...
-             console.log(`匯出月度報表: ${yearMonth}...`); 
-             if (typeof XLSX === 'undefined') {
-                 console.error("XLSX library 未載入！");
-                 displayError("無法匯出 Excel，所需元件載入失敗。");
-                 return;
-             }
-             const allDates = Object.keys(dataFromFirestore.counts); 
-             const relevantDates = allDates.filter(date => date.startsWith(yearMonth)).sort();
-
-             if (relevantDates.length === 0) {
-                 monthlyReportError.textContent = '這個月份沒有資料可匯出。';
-                 monthlyReportError.classList.remove('hidden');
-                 console.warn(`${yearMonth} 沒有資料可匯出`); 
-                 return;
-             }
-             monthlyReportError.classList.add('hidden');
-
-             try { 
-                 const wb = XLSX.utils.book_new();
-                 const twYear = yearMonth.split('-')[0] - 1911;
-                 const twMonth = parseInt(yearMonth.split('-')[1], 10);
-
-                 const summaryData = {}; 
-                 let summaryColTotals = Array(SHIFTS.length).fill(0);
-                 let summaryGrandTotal = 0;
-
-                 relevantDates.forEach(date => {
-                     const dateData = dataFromFirestore.counts[date]; 
-                     if (!dateData) return;
-                     dataFromFirestore.departments.forEach(dept => {
-                         if (dept.id === 'DYN_ADD') return; 
-                         if (!summaryData[dept.id]) summaryData[dept.id] = {};
-                         SHIFTS.forEach((shift, index) => {
-                             const count = getCount(date, dept.id, shift.id); 
-                             if (count > 0) {
-                                 if (!summaryData[dept.id][shift.id]) summaryData[dept.id][shift.id] = 0;
-                                 summaryData[dept.id][shift.id] += count;
-                             }
-                         });
-                     });
-                 });
-
-                 const header1 = ["", "送件", "", "", "", "收件", "", "", ""];
-                 const header2 = ["班別", "08:15", "12:15", "13:00", "15:15", "10:00", "13:00", "14:00", "合計件數"];
-                 const header3 = ["", "佳里→永康", "佳里→永康", "佳里→柳營", "佳里→永康", "永康→佳里", "柳營→佳里", "永康→佳里", ""];
-
-                 let summaryAOA = [
-                     [`佳里奇美醫院 院內郵差月統計表`],
-                     [`月份： ${twYear}年${twMonth}月`],
-                     header1, header2, header3
-                 ];
-
-                 dataFromFirestore.layoutOrder.forEach(deptId => {
-                     const dept = dataFromFirestore.departments.find(d => d.id === deptId);
-                     if (!dept || dept.id === 'DYN_ADD') return; 
-
-                     let rowTotal = 0;
-                     const row = [dept.name];
-                     const deptData = summaryData[dept.id] || {};
-
-                     SHIFTS.forEach((shift, index) => {
-                         const count = deptData[shift.id] || 0;
-                         row.push(count > 0 ? count : "");
-                         rowTotal += count;
-                         summaryColTotals[index] += count;
-                     });
-
-                     row.push(rowTotal > 0 ? rowTotal : "");
-                     summaryGrandTotal += rowTotal;
-                     summaryAOA.push(row);
-                 });
-
-                 const summaryFooterRow = ["合計件數"];
-                 summaryColTotals.forEach(total => {
-                     summaryFooterRow.push(total > 0 ? total : "");
-                 });
-                 summaryFooterRow.push(summaryGrandTotal > 0 ? summaryGrandTotal : "");
-                 summaryAOA.push(summaryFooterRow);
-
-                 const wsSummary = XLSX.utils.aoa_to_sheet(summaryAOA);
-                 wsSummary['!merges'] = [
-                     { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }, 
-                     { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } }, 
-                     { s: { r: 2, c: 1 }, e: { r: 2, c: 4 } }, 
-                     { s: { r: 2, c: 5 }, e: { r: 2, c: 7 } }, 
-                 ];
-                 XLSX.utils.book_append_sheet(wb, wsSummary, "月份統計");
-
-                 const dailyHeader1 = ["", "送件", "", "", "", "收件", "", "", ""];
-                 const dailyHeader2 = ["班別", "08:15", "12:15", "13:00", "15:15", "10:00", "13:00", "14:00", "合計件數"];
-                 const dailyHeader3 = ["", "佳里→永康", "佳里→永康", "佳里→柳營", "佳里→永康", "永康→佳里", "柳營→佳里", "永康→佳里", ""];
-
-                 relevantDates.forEach(date => {
-                     const dateData = dataFromFirestore.counts[date]; 
-                     if (!dateData || Object.keys(dateData).length === 0) {
-                         return;
-                     }
-
-                     const twDate = new Date(date);
-                     const twYear = twDate.getFullYear() - 1911;
-                     const twMonth = twDate.getMonth() + 1;
-                     const twDay = twDate.getDate();
-                     const dailyTitle = `佳里奇美醫院 院內郵差件數統計表`;
-                     const dailyDateString = `日期： ${twYear}年${twMonth}月${twDay}日`;
-
-                     let dailyAOA = [
-                         [dailyTitle],
-                         [dailyDateString],
-                         dailyHeader1,
-                         dailyHeader2,
-                         dailyHeader3
-                     ];
-
-                     const colTotals = Array(SHIFTS.length).fill(0);
-                     let grandTotal = 0;
-                     let hasDataForThisDay = false;
-
-                     dataFromFirestore.layoutOrder.forEach(deptId => {
-                         const dept = dataFromFirestore.departments.find(d => d.id === deptId);
-                         if (!dept || dept.id === 'DYN_ADD') return; 
-
-                         let rowTotal = 0;
-                         const row = [dept.name];
-
-                         SHIFTS.forEach((shift, index) => {
-                             const count = getCount(date, dept.id, shift.id);
-                             row.push(count > 0 ? count : "");
-                             rowTotal += count;
-                             colTotals[index] += count;
-                         });
-
-                         row.push(rowTotal > 0 ? rowTotal : "");
-                         grandTotal += rowTotal;
-                         dailyAOA.push(row);
-                         if (rowTotal > 0) {
-                             hasDataForThisDay = true;
-                         }
-                     });
-
-                     if (hasDataForThisDay) {
-                         const footerRow = ["合計件數"];
-                         colTotals.forEach(total => {
-                             footerRow.push(total > 0 ? total : "");
-                         });
-                         footerRow.push(grandTotal > 0 ? grandTotal : "");
-                         dailyAOA.push(footerRow);
-
-                         const wsDaily = XLSX.utils.aoa_to_sheet(dailyAOA);
-                         wsDaily['!merges'] = [
-                             { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }, 
-                             { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } }, 
-                             { s: { r: 2, c: 1 }, e: { r: 2, c: 4 } }, 
-                             { s: { r: 2, c: 5 }, e: { r: 2, c: 7 } }, 
-                         ];
-                         const sheetName = date.substring(5); 
-                         XLSX.utils.book_append_sheet(wb, wsDaily, sheetName);
-                     }
-                 });
-
-                 const fileName = `院內郵件月報表_${yearMonth}.xlsx`;
-                 XLSX.writeFile(wb, fileName);
-                 console.log("月度報表匯出成功:", fileName); 
-                 hideMonthlyReportModal();
-             } catch (error) {
-                 console.error("匯出月度報表失敗:", error);
-                 displayError("匯出月度報表時發生錯誤：" + error.message);
-                 hideMonthlyReportModal();
-             }
+            try {
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                ws['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } },
+                    { s: { r: 2, c: 1 }, e: { r: 2, c: 4 } },
+                    { s: { r: 2, c: 5 }, e: { r: 2, c: 7 } },
+                ];
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "郵件計數");
+                const fileName = `院內郵件計數_${date}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                console.log("Excel 匯出成功:", fileName);
+            } catch (error) {
+                console.error("匯出 Excel 失敗:", error);
+                displayError("匯出 Excel 檔案時發生錯誤：" + error.message);
+            }
         }
         
-        // --- *** 9. AI 分析功能 (新) *** ---
+        // *** MODIFICATION: 統一的報表匯出邏輯 (處理月報表和年報表) ***
+        /**
+         * 匯出選定的報表 (月報表或年報表)
+         * @param {string} period - YYYY-MM (月報表) 或 YYYY (年報表)
+         * @param {string} type - 'month' 或 'year'
+         */
+        function exportSelectedReport(period, type) {
+            console.log(`匯出報表: ${type}, 期間: ${period}...`);
+            if (typeof XLSX === 'undefined') {
+                console.error("XLSX library 未載入！");
+                displayError("無法匯出 Excel，所需元件載入失敗。");
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+            let summaryData = {};
+            let summaryColTotals = Array(SHIFTS.length).fill(0);
+            let summaryGrandTotal = 0;
+            
+            const twYearBase = type === 'month' ? period.split('-')[0] : period;
+            const twYear = parseInt(twYearBase, 10) - 1911;
+            const allDates = Object.keys(dataFromFirestore.counts);
+
+            // 確定要處理的日期範圍
+            const relevantDates = allDates
+                .filter(date => date.startsWith(period))
+                .sort();
+            
+            if (relevantDates.length === 0) {
+                reportDownloadError.textContent = `這個 ${type === 'month' ? '月' : '年'} 份沒有資料可匯出。`;
+                reportDownloadError.classList.remove('hidden');
+                console.warn(`${period} 沒有資料可匯出`);
+                return;
+            }
+            reportDownloadError.classList.add('hidden');
+
+            try {
+                // 1. 彙總數據計算
+                relevantDates.forEach(date => {
+                    const dateData = dataFromFirestore.counts[date];
+                    if (!dateData) return;
+                    dataFromFirestore.departments.forEach(dept => {
+                        if (dept.id === 'DYN_ADD') return;
+                        if (!summaryData[dept.id]) summaryData[dept.id] = {};
+                        SHIFTS.forEach((shift) => {
+                            const count = getCount(date, dept.id, shift.id);
+                            if (count > 0) {
+                                if (!summaryData[dept.id][shift.id]) summaryData[dept.id][shift.id] = 0;
+                                summaryData[dept.id][shift.id] += count;
+                            }
+                        });
+                    });
+                });
+
+                // 2. 彙總報表工作表 (月報表/年報表皆有)
+                const header1 = ["", "送件", "", "", "", "收件", "", "", ""];
+                const header2 = ["班別", "08:15", "12:15", "13:00", "15:15", "10:00", "13:00", "14:00", "合計件數"];
+                const header3 = ["", "佳里→永康", "佳里→永康", "佳里→柳營", "佳里→永康", "永康→佳里", "柳營→佳里", "永康→佳里", ""];
+
+                const reportTitle = type === 'month' ? "佳里奇美醫院 院內郵差月統計表" : "佳里奇美醫院 院內郵差年統計表";
+                const dateHeader = type === 'month' 
+                    ? `月份： ${twYear}年${parseInt(period.split('-')[1], 10)}月` 
+                    : `年份： ${twYear}年`;
+
+                let summaryAOA = [
+                    [reportTitle],
+                    [dateHeader],
+                    header1, header2, header3
+                ];
+
+                dataFromFirestore.layoutOrder.forEach(deptId => {
+                    const dept = dataFromFirestore.departments.find(d => d.id === deptId);
+                    if (!dept || dept.id === 'DYN_ADD') return;
+
+                    let rowTotal = 0;
+                    const row = [dept.name];
+                    const deptData = summaryData[dept.id] || {};
+
+                    SHIFTS.forEach((shift, index) => {
+                        const count = deptData[shift.id] || 0;
+                        row.push(count > 0 ? count : "");
+                        rowTotal += count;
+                        summaryColTotals[index] += count;
+                    });
+
+                    row.push(rowTotal > 0 ? rowTotal : "");
+                    summaryGrandTotal += rowTotal;
+                    summaryAOA.push(row);
+                });
+
+                const summaryFooterRow = ["合計件數"];
+                summaryColTotals.forEach(total => {
+                    summaryFooterRow.push(total > 0 ? total : "");
+                });
+                summaryFooterRow.push(summaryGrandTotal > 0 ? summaryGrandTotal : "");
+                summaryAOA.push(summaryFooterRow);
+
+                const wsSummary = XLSX.utils.aoa_to_sheet(summaryAOA);
+                wsSummary['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
+                    { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } },
+                    { s: { r: 2, c: 1 }, e: { r: 2, c: 4 } },
+                    { s: { r: 2, c: 5 }, e: { r: 2, c: 7 } },
+                ];
+                XLSX.utils.book_append_sheet(wb, wsSummary, type === 'month' ? "月份統計" : "年度彙總");
+
+                // 3. 每日明細工作表 (僅限月報表)
+                if (type === 'month') {
+                    const dailyHeader1 = ["", "送件", "", "", "", "收件", "", "", ""];
+                    const dailyHeader2 = ["班別", "08:15", "12:15", "13:00", "15:15", "10:00", "13:00", "14:00", "合計件數"];
+                    const dailyHeader3 = ["", "佳里→永康", "佳里→永康", "佳里→柳營", "佳里→永康", "永康→佳里", "柳營→佳里", "永康→佳里", ""];
+
+                    relevantDates.forEach(date => {
+                        const dateData = dataFromFirestore.counts[date];
+                        if (!dateData || Object.keys(dateData).length === 0) {
+                            return;
+                        }
+
+                        const twDate = new Date(date);
+                        const twYearDay = twDate.getFullYear() - 1911;
+                        const twMonthDay = twDate.getMonth() + 1;
+                        const twDay = twDate.getDate();
+                        const dailyTitle = `佳里奇美醫院 院內郵差件數統計表`;
+                        const dailyDateString = `日期： ${twYearDay}年${twMonthDay}月${twDay}日`;
+
+                        let dailyAOA = [
+                            [dailyTitle],
+                            [dailyDateString],
+                            dailyHeader1,
+                            dailyHeader2,
+                            dailyHeader3
+                        ];
+
+                        const colTotals = Array(SHIFTS.length).fill(0);
+                        let grandTotal = 0;
+                        let hasDataForThisDay = false;
+
+                        dataFromFirestore.layoutOrder.forEach(deptId => {
+                            const dept = dataFromFirestore.departments.find(d => d.id === deptId);
+                            if (!dept || dept.id === 'DYN_ADD') return;
+
+                            let rowTotal = 0;
+                            const row = [dept.name];
+
+                            SHIFTS.forEach((shift, index) => {
+                                const count = getCount(date, dept.id, shift.id);
+                                row.push(count > 0 ? count : "");
+                                rowTotal += count;
+                                colTotals[index] += count;
+                            });
+
+                            row.push(rowTotal > 0 ? rowTotal : "");
+                            grandTotal += rowTotal;
+                            dailyAOA.push(row);
+                            if (rowTotal > 0) {
+                                hasDataForThisDay = true;
+                            }
+                        });
+
+                        if (hasDataForThisDay) {
+                            const footerRow = ["合計件數"];
+                            colTotals.forEach(total => {
+                                footerRow.push(total > 0 ? total : "");
+                            });
+                            footerRow.push(grandTotal > 0 ? grandTotal : "");
+                            dailyAOA.push(footerRow);
+
+                            const wsDaily = XLSX.utils.aoa_to_sheet(dailyAOA);
+                            wsDaily['!merges'] = [
+                                { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
+                                { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } },
+                                { s: { r: 2, c: 1 }, e: { r: 2, c: 4 } },
+                                { s: { r: 2, c: 5 }, e: { r: 2, c: 7 } },
+                            ];
+                            const sheetName = date.substring(5).replace('-', '.');
+                            XLSX.utils.book_append_sheet(wb, wsDaily, sheetName);
+                        }
+                    });
+                }
+                
+                // 4. 寫入檔案
+                const fileName = type === 'month' ? `院內郵件月報表_${period}.xlsx` : `院內郵件年報表_${period}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                console.log("報表匯出成功:", fileName);
+                hideReportDownloadModal();
+
+            } catch (error) {
+                console.error("匯出報表失敗:", error);
+                displayError("匯出 Excel 報表時發生錯誤：" + error.message);
+                hideReportDownloadModal();
+            }
+        }
+        
+        // --- 9. AI 分析功能 (不變) ---
         
         /**
          * 呼叫 Gemini API
@@ -1600,26 +1570,26 @@
                 month: yearMonth,
                 campusTotals: analysis,
                 topUnits: Object.entries(allDepts)
-                                    .sort((a, b) => b[1] - a[1]) // 排序
-                                    .slice(0, 10) // 取前10名
-                                    .map(item => ({ unit: item[0], total: item[1] })) 
+                             .sort((a, b) => b[1] - a[1]) // 排序
+                             .slice(0, 10) // 取前10名
+                             .map(item => ({ unit: item[0], total: item[1] }))
             };
             
             const aiPrompt = `
 月份: ${aiPromptData.month}
 數據摘要:
 1. 院區總量:
-   - 永康院區: 送件 ${aiPromptData.campusTotals.yongkang.send} 件, 收件 ${aiPromptData.campusTotals.yongkang.receive} 件
-   - 柳營院區: 送件 ${aiPromptData.campusTotals.liuying.send} 件, 收件 ${aiPromptData.campusTotals.liuying.receive} 件
+    - 永康院區: 送件 ${aiPromptData.campusTotals.yongkang.send} 件, 收件 ${aiPromptData.campusTotals.yongkang.receive} 件
+    - 柳營院區: 送件 ${aiPromptData.campusTotals.liuying.send} 件, 收件 ${aiPromptData.campusTotals.liuying.receive} 件
 
 2. 永康院區-各班次件數:
-${Object.values(aiPromptData.campusTotals.yongkang.shifts).map(s => `   - ${s.name}: ${s.count} 件`).join('\n')}
+${Object.values(aiPromptData.campusTotals.yongkang.shifts).map(s => `    - ${s.name}: ${s.count} 件`).join('\n')}
 
 3. 柳營院區-各班次件數:
-${Object.values(aiPromptData.campusTotals.liuying.shifts).map(s => `   - ${s.name}: ${s.count} 件`).join('\n')}
+${Object.values(aiPromptData.campusTotals.liuying.shifts).map(s => `    - ${s.name}: ${s.count} 件`).join('\n')}
 
 4. 本月郵件量前 10 名單位:
-${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
+${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
 
 請基於以上數據提供分析與建議。
 `;
@@ -1755,49 +1725,42 @@ ${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
             try {
                 const aiResult = await callGeminiAPI(data.aiPrompt);
                 
-                // *** 修改：檢查 AI 回應是否為錯誤訊息 ***
-                if (aiResult.startsWith("AI 分析失敗")) {
-                    console.warn("AI 分析回傳錯誤訊息:", aiResult);
-                    // 使用 Tailwind 的紅色文字來顯示錯誤
-                    aiSuggestionContent.innerHTML = `<p class="text-red-600 font-medium">${aiResult}</p>`;
-                } else {
-                    // 將 AI 回應 (可能是 Markdown) 轉換為 HTML
-                    let htmlResult = aiResult
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-                        .replace(/^\* (.*$)/gm, '<li>$1</li>') // Convert '* item' to '<li>item</li>'
-                        .replace(/^\d+\. (.*$)/gm, '<li>$1</li>') // Convert '1. item' to '<li>item</li>'
-                        
-                        // 處理列表嵌套
-                        .replace(/(<li>.*<\/li>)/gm, '<ul>$1</ul>') // Wrap <li> block in <ul>
-                        .replace(/<\/ul>\s*<ul>/g, '') // Merge adjacent <ul>
-                        .replace(/<\/li>\s*<li>/g, '</li><li>') // Merge <li>
-                        
-                        .replace(/\n\n/g, '<p></p>') // Double newline -> paragraph
-                        .replace(/\n/g, '<br />') // Single newline -> <br>
-                        .replace(/<p><\/p>/g, '') // Clean empty paragraphs
-                        
-                        // 清理 <br> 和列表的錯誤組合
-                        .replace(/<br \/><ul>/g, '<ul>')
-                        .replace(/<br \/><li>/g, '<li>')
-                        .replace(/<\/li><br \/>/g, '</li>')
-                        .replace(/<\/ul><br \/>/g, '</ul>');
+                // 將 AI 回應 (可能是 Markdown) 轉換為 HTML
+                let htmlResult = aiResult
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+                    .replace(/^\* (.*$)/gm, '<li>$1</li>') // Convert '* item' to '<li>item</li>'
+                    .replace(/^\d+\. (.*$)/gm, '<li>$1</li>') // Convert '1. item' to '<li>item</li>'
+                    
+                    // 處理列表嵌套
+                    .replace(/(<li>.*<\/li>)/gm, '<ul>$1</ul>') // Wrap <li> block in <ul>
+                    .replace(/<\/ul>\s*<ul>/g, '') // Merge adjacent <ul>
+                    .replace(/<\/li>\s*<li>/g, '</li><li>') // Merge <li>
+                    
+                    .replace(/\n\n/g, '<p></p>') // Double newline -> paragraph
+                    .replace(/\n/g, '<br />') // Single newline -> <br>
+                    .replace(/<p><\/p>/g, '') // Clean empty paragraphs
+                    
+                    // 清理 <br> 和列表的錯誤組合
+                    .replace(/<br \/><ul>/g, '<ul>')
+                    .replace(/<br \/><li>/g, '<li>')
+                    .replace(/<\/li><br \/>/g, '</li>')
+                    .replace(/<\/ul><br \/>/g, '</ul>');
                 
-                    // 將不在列表中的 <br> 轉換為 <p>
-                    const segments = htmlResult.split(/(<ul>.*?<\/ul>)/g); // 按列表分割
-                    htmlResult = segments.map(seg => {
-                        if (seg.startsWith('<ul>')) {
-                            return seg; // 列表保持原樣
-                        }
-                        // 非列表部分，用 <p> 包裝
-                        return seg.split(/<br \/>\s*<br \/>/g) // 按段落分割
-                                .map(p => p.trim())
-                                .filter(p => p.length > 0)
-                                .map(p => `<p>${p.replace(/<br \/>/g, ' ')}</p>`) // 將段落內的 <br> 轉為空白
-                                .join('');
-                    }).join('');
+                // 將不在列表中的 <br> 轉換為 <p>
+                const segments = htmlResult.split(/(<ul>.*?<\/ul>)/g); // 按列表分割
+                htmlResult = segments.map(seg => {
+                    if (seg.startsWith('<ul>')) {
+                        return seg; // 列表保持原樣
+                    }
+                    // 非列表部分，用 <p> 包裝
+                    return seg.split(/<br \/>\s*<br \/>/g) // 按段落分割
+                             .map(p => p.trim())
+                             .filter(p => p.length > 0)
+                             .map(p => `<p>${p.replace(/<br \/>/g, ' ')}</p>`) // 將段落內的 <br> 轉為空白
+                             .join('');
+                }).join('');
 
-                    aiSuggestionContent.innerHTML = htmlResult;
-                }
+                aiSuggestionContent.innerHTML = htmlResult;
             } catch (error) {
                 console.error("AI 分析失敗:", error);
                 aiSuggestionContent.innerHTML = `<p class="text-red-500">AI 建議載入失敗：${error.message}</p>`;
@@ -1809,111 +1772,137 @@ ${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
 
         // --- 10. Modals 與重設功能 ---
         function showResetModal() {
-            // ... (showResetModal 函數內容不變) ...
-             resetDateDisplay.textContent = state.currentDate;
-             resetModal.classList.remove('hidden');
+            resetDateDisplay.textContent = state.currentDate;
+            resetModal.classList.remove('hidden');
         }
 
         function hideResetModal() {
-            // ... (hideResetModal 函數內容不變) ...
-             resetModal.classList.add('hidden');
+            resetModal.classList.add('hidden');
         }
 
         function resetCurrentDateCounts() {
-            // ... (resetCurrentDateCounts 函數內容不變) ...
-             console.log(`清空日期 ${state.currentDate} 的計數...`); 
-             delete dataFromFirestore.counts[state.currentDate];
-             isDataDirty = true;
-             updateSaveButtonState();
+            console.log(`清空日期 ${state.currentDate} 的計數...`);
+            delete dataFromFirestore.counts[state.currentDate];
+            isDataDirty = true;
+            updateSaveButtonState();
 
-             saveDataToFirestore().then(() => {
-                 console.log("清空操作已儲存"); 
-                 renderDepartmentGrid();
-                 updateTotals();
-                 hideResetModal();
-             }).catch(error => {
-                 console.error("儲存清空操作失敗:", error);
-                 displayError("清空資料時儲存失敗，請稍後檢查。");
-                 renderDepartmentGrid();
-                 updateTotals();
-                 hideResetModal();
-             });
+            saveDataToFirestore().then(() => {
+                console.log("清空操作已儲存");
+                renderDepartmentGrid();
+                updateTotals();
+                hideResetModal();
+            }).catch(error => {
+                console.error("儲存清空操作失敗:", error);
+                displayError("清空資料時儲存失敗，請稍後檢查。");
+                renderDepartmentGrid();
+                updateTotals();
+                hideResetModal();
+            });
         }
 
-        function showMonthlyReportModal() {
-            // ... (showMonthlyReportModal 函數內容不變) ...
-             const today = new Date();
-             const year = today.getFullYear();
-             const month = (today.getMonth() + 1).toString().padStart(2, '0');
-             monthInput.value = `${year}-${month}`;
-             monthlyReportError.classList.add('hidden');
-             monthlyReportModal.classList.remove('hidden');
+        // *** MODIFICATION: 報表下載 Modal 顯示/隱藏與邏輯切換 ***
+        function showReportDownloadModal() {
+            console.log("顯示報表下載 Modal");
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = (today.getMonth() + 1).toString().padStart(2, '0');
+            
+            // 預設為月報表
+            reportTypeMonth.checked = true;
+            reportPeriodLabel.textContent = '選擇月份';
+            reportPeriodInput.type = 'month';
+            reportPeriodInput.value = `${year}-${month}`;
+
+            reportDownloadError.classList.add('hidden');
+            reportDownloadModal.classList.remove('hidden');
         }
 
-        function hideMonthlyReportModal() {
-            // ... (hideMonthlyReportModal 函數內容不變) ...
-             monthlyReportModal.classList.add('hidden');
+        function hideReportDownloadModal() {
+            reportDownloadModal.classList.add('hidden');
         }
 
-        function downloadMonthlyReport() {
-            // ... (downloadMonthlyReport 函數內容不變) ...
-             const yearMonth = monthInput.value;
-             if (!yearMonth) {
-                 monthlyReportError.textContent = '請選擇一個月份。';
-                 monthlyReportError.classList.remove('hidden');
-                 return;
-             }
-             exportMonthlyReport(yearMonth);
+        function handleReportDownload() {
+            console.log("處理報表下載動作");
+            const reportType = document.querySelector('input[name="report-type"]:checked').value;
+            const period = reportPeriodInput.value;
+            
+            if (!period) {
+                reportDownloadError.textContent = `請選擇一個有效的 ${reportType === 'month' ? '月份' : '年份'}。`;
+                reportDownloadError.classList.remove('hidden');
+                return;
+            }
+            
+            // 呼叫統一的匯出函式
+            exportSelectedReport(period, reportType);
         }
+
+        function handleReportTypeChange(event) {
+            const type = event.target.value;
+            reportDownloadError.classList.add('hidden'); // 清除錯誤訊息
+            
+            if (type === 'month') {
+                reportPeriodLabel.textContent = '選擇月份';
+                reportPeriodInput.type = 'month';
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = (today.getMonth() + 1).toString().padStart(2, '0');
+                reportPeriodInput.value = `${year}-${month}`; // 預設為當月
+                reportPeriodInput.removeAttribute('max');
+                reportPeriodInput.removeAttribute('pattern');
+            } else if (type === 'year') {
+                reportPeriodLabel.textContent = '選擇年份';
+                reportPeriodInput.type = 'number';
+                reportPeriodInput.pattern = '\\d{4}';
+                reportPeriodInput.value = new Date().getFullYear(); // 預設為當年
+                reportPeriodInput.max = new Date().getFullYear();
+            }
+        }
+        // ... (analysis modal functions 不變) ...
 
         function showAddDeptModal() {
-            // ... (showAddDeptModal 函數內容不變) ...
-             newDeptNameInput.value = '';
-             addDeptError.classList.add('hidden');
-             addDeptModal.classList.remove('hidden');
-             newDeptNameInput.focus();
+            newDeptNameInput.value = '';
+            addDeptError.classList.add('hidden');
+            addDeptModal.classList.remove('hidden');
+            newDeptNameInput.focus();
         }
 
         function hideAddDeptModal() {
-            // ... (hideAddDeptModal 函數內容不變) ...
-             addDeptModal.classList.add('hidden');
+            addDeptModal.classList.add('hidden');
         }
 
         function confirmAddDept() {
-            // ... (confirmAddDept 函數內容不變) ...
-             const newName = newDeptNameInput.value.trim();
-             if (!newName) {
-                 addDeptError.textContent = '單位名稱不可空白。';
-                 addDeptError.classList.remove('hidden');
-                 return;
-             }
-             if (dataFromFirestore.departments.some(d => d.name === newName)) { 
-                 addDeptError.textContent = '這個名稱的單位已經存在。';
-                 addDeptError.classList.remove('hidden');
-                 return;
-             }
-             console.log(`新增單位: ${newName}`); 
-             const newDept = {
-                 id: `DYN_${Date.now()}`, 
-                 name: newName
-             };
-             console.log("新單位物件:", newDept); 
-             dataFromFirestore.departments.push(newDept);
-             const addBtnIndex = dataFromFirestore.layoutOrder.indexOf('DYN_ADD');
-             if (addBtnIndex !== -1) {
-                 dataFromFirestore.layoutOrder.splice(addBtnIndex, 0, newDept.id);
-                 console.log("插入新單位到 layoutOrder:", dataFromFirestore.layoutOrder); 
-             } else {
-                 console.warn("未找到 DYN_ADD 按鈕，將新單位添加到 layoutOrder 末尾。"); 
-                 dataFromFirestore.layoutOrder.push(newDept.id); 
-             }
-             isDataDirty = true;
-             updateSaveButtonState();
-             renderDepartmentGrid(); 
-             hideAddDeptModal();
+            const newName = newDeptNameInput.value.trim();
+            if (!newName) {
+                addDeptError.textContent = '單位名稱不可空白。';
+                addDeptError.classList.remove('hidden');
+                return;
+            }
+            if (dataFromFirestore.departments.some(d => d.name === newName)) {
+                addDeptError.textContent = '這個名稱的單位已經存在。';
+                addDeptError.classList.remove('hidden');
+                return;
+            }
+            console.log(`新增單位: ${newName}`);
+            const newDept = {
+                id: `DYN_${Date.now()}`,
+                name: newName
+            };
+            console.log("新單位物件:", newDept);
+            dataFromFirestore.departments.push(newDept);
+            const addBtnIndex = dataFromFirestore.layoutOrder.indexOf('DYN_ADD');
+            if (addBtnIndex !== -1) {
+                dataFromFirestore.layoutOrder.splice(addBtnIndex, 0, newDept.id);
+                console.log("插入新單位到 layoutOrder:", dataFromFirestore.layoutOrder);
+            } else {
+                console.warn("未找到 DYN_ADD 按鈕，將新單位添加到 layoutOrder 末尾。");
+                dataFromFirestore.layoutOrder.push(newDept.id);
+            }
+            isDataDirty = true;
+            updateSaveButtonState();
+            renderDepartmentGrid();
+            hideAddDeptModal();
         }
         
-        // *** 新增：分析 Modal 顯示/隱藏 ***
         function showAnalysisModal() {
             const today = new Date();
             const year = today.getFullYear();
@@ -1934,7 +1923,7 @@ ${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
             aiSuggestionContent.innerHTML = ''; // 清空 AI 內容
             aiSuggestionLoading.style.display = 'flex'; // 顯示 AI 載入
             analysisResultsModal.classList.remove('hidden');
-             // 確保 lucide icons 被渲染
+            // 確保 lucide icons 被渲染
             if (typeof lucide !== 'undefined' && lucide.createIcons) {
                 try { lucide.createIcons(); } catch(e) { console.error("渲染分析 modal lucide 失敗:", e); }
             }
@@ -1947,176 +1936,173 @@ ${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
 
         // --- 11. Firebase 初始化與資料綁定 ---
         function displayError(message) {
-            // ... (displayError 函數內容不變) ...
-             console.error("錯誤:", message); 
-             if (errorMessageDiv) {
-                 errorMessageDiv.textContent = message;
-                 errorMessageDiv.style.display = 'block'; 
-             }
-             if (loadingIndicator) {
-                 loadingIndicator.style.display = 'none'; 
-             }
-             if (departmentGrid) {
-                 departmentGrid.classList.add('hidden'); 
-             }
+            console.error("錯誤:", message);
+            if (errorMessageDiv) {
+                errorMessageDiv.textContent = message;
+                errorMessageDiv.style.display = 'block';
+            }
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            if (departmentGrid) {
+                departmentGrid.classList.add('hidden');
+            }
         }
 
         function handleDataLoad(docData) {
-            // ... (handleDataLoad 函數內容不變) ...
-             console.log("handleDataLoad 開始執行...", docData ? "找到文件資料" : "未找到文件資料"); 
-             try {
-                 if (docData) {
-                     console.log("從 Firestore 載入資料:", docData); 
-                     dataFromFirestore.counts = (typeof docData.counts === 'object' && docData.counts !== null) ? docData.counts : {};
-                     const savedDepts = Array.isArray(docData.departments) ? docData.departments : [...DEFAULT_DEPARTMENTS];
-                     const savedLayout = Array.isArray(docData.layoutOrder) ? docData.layoutOrder : DEFAULT_DEPARTMENTS.map(d => d.id);
+            console.log("handleDataLoad 開始執行...", docData ? "找到文件資料" : "未找到文件資料");
+            try {
+                if (docData) {
+                    console.log("從 Firestore 載入資料:", docData);
+                    dataFromFirestore.counts = (typeof docData.counts === 'object' && docData.counts !== null) ? docData.counts : {};
+                    const savedDepts = Array.isArray(docData.departments) ? docData.departments : [...DEFAULT_DEPARTMENTS];
+                    const savedLayout = Array.isArray(docData.layoutOrder) ? docData.layoutOrder : DEFAULT_DEPARTMENTS.map(d => d.id);
 
-                     if (!savedDepts.some(d => d.id === 'DYN_ADD')) {
-                         console.log("departments 缺少 DYN_ADD，正在添加..."); 
-                         savedDepts.push({ id: 'DYN_ADD', name: '新增單位...' });
-                     }
-                     dataFromFirestore.departments = savedDepts.filter(d => d && d.id && d.name);
+                    if (!savedDepts.some(d => d.id === 'DYN_ADD')) {
+                        console.log("departments 缺少 DYN_ADD，正在添加...");
+                        savedDepts.push({ id: 'DYN_ADD', name: '新增單位...' });
+                    }
+                    dataFromFirestore.departments = savedDepts.filter(d => d && d.id && d.name);
 
-                     let validDeptIds = new Set(dataFromFirestore.departments.map(d => d.id));
-                     let layout = savedLayout.filter(id => id && id !== 'DYN_ADD' && validDeptIds.has(id));
-                     layout = [...new Set(layout)];
-                     dataFromFirestore.departments.forEach(dept => {
-                         if (dept.id !== 'DYN_ADD' && !layout.includes(dept.id)) {
-                             console.warn(`layoutOrder 缺少單位 ${dept.name} (${dept.id})，正在補加到末尾`);
-                             layout.push(dept.id);
-                         }
-                     });
-                     layout.push('DYN_ADD'); 
-                     dataFromFirestore.layoutOrder = layout;
-                     console.log("整理後的 layoutOrder:", dataFromFirestore.layoutOrder); 
+                    let validDeptIds = new Set(dataFromFirestore.departments.map(d => d.id));
+                    let layout = savedLayout.filter(id => id && id !== 'DYN_ADD' && validDeptIds.has(id));
+                    layout = [...new Set(layout)];
+                    dataFromFirestore.departments.forEach(dept => {
+                        if (dept.id !== 'DYN_ADD' && !layout.includes(dept.id)) {
+                            console.warn(`layoutOrder 缺少單位 ${dept.name} (${dept.id})，正在補加到末尾`);
+                            layout.push(dept.id);
+                        }
+                    });
+                    layout.push('DYN_ADD');
+                    dataFromFirestore.layoutOrder = layout;
+                    console.log("整理後的 layoutOrder:", dataFromFirestore.layoutOrder);
 
-                 } else {
-                     console.log("偵測到新使用者或無資料，正在建立預設資料...");
-                     dataFromFirestore = {
-                         counts: {},
-                         departments: [...DEFAULT_DEPARTMENTS],
-                         layoutOrder: DEFAULT_DEPARTMENTS.map(d => d.id)
-                     };
-                 }
+                } else {
+                    console.log("偵測到新使用者或無資料，正在建立預設資料...");
+                    dataFromFirestore = {
+                        counts: {},
+                        departments: [...DEFAULT_DEPARTMENTS],
+                        layoutOrder: DEFAULT_DEPARTMENTS.map(d => d.id)
+                    };
+                }
 
-                 isDataLoaded = true;
-                 console.log("資料處理完成，準備渲染畫面...");
+                isDataLoaded = true;
+                console.log("資料處理完成，準備渲染畫面...");
 
-                 renderShiftTabs();
-                 renderDepartmentGrid(); 
-                 updateTotals();
+                renderShiftTabs();
+                renderDepartmentGrid();
+                updateTotals();
 
-                 isDataDirty = false;
-                 updateSaveButtonState();
+                isDataDirty = false;
+                updateSaveButtonState();
 
-                 if (!docData) {
-                     console.log("首次載入，自動儲存預設資料...");
-                     saveDataToFirestore();
-                 }
-                 console.log("handleDataLoad 成功完成"); 
-             } catch (error) {
-                 console.error("處理載入的資料時發生錯誤:", error); 
-                 displayError("處理載入的資料時發生錯誤：" + error.message);
-                 isDataLoaded = true; 
-                 loadingIndicator.style.display = 'none'; 
-             }
+                if (!docData) {
+                    console.log("首次載入，自動儲存預設資料...");
+                    saveDataToFirestore();
+                }
+                console.log("handleDataLoad 成功完成");
+            } catch (error) {
+                console.error("處理載入的資料時發生錯誤:", error);
+                displayError("處理載入的資料時發生錯誤：" + error.message);
+                isDataLoaded = true;
+                loadingIndicator.style.display = 'none';
+            }
         }
 
         async function initFirebase() {
-            // ... (initFirebase 函數內容不變) ...
-             console.log("initFirebase 開始執行..."); 
-             if (!auth || !db) {
-                 console.error("Firebase Auth 或 Firestore 未成功初始化，無法繼續。");
-                 displayError("資料庫服務初始化失敗，請稍後重試或聯繫管理員。");
-                 if(loadingIndicator) loadingIndicator.style.display = 'none';
-                 return; 
-             }
+            console.log("initFirebase 開始執行...");
+            if (!auth || !db) {
+                console.error("Firebase Auth 或 Firestore 未成功初始化，無法繼續。");
+                displayError("資料庫服務初始化失敗，請稍後重試或聯繫管理員。");
+                if(loadingIndicator) loadingIndicator.style.display = 'none';
+                return;
+            }
 
-             onAuthStateChanged(auth, (user) => {
-                 console.log("onAuthStateChanged 觸發"); 
-                 if (user) {
-                     console.log("Firebase 認證成功, User ID:", user.uid);
-                     userId = user.uid;
+            onAuthStateChanged(auth, (user) => {
+                console.log("onAuthStateChanged 觸發");
+                if (user) {
+                    console.log("Firebase 認證成功, User ID:", user.uid);
+                    userId = user.uid;
 
-                     if (unsubscribeSnapshot) {
-                         console.log("停止舊的 Snapshot 監聽..."); 
-                         unsubscribeSnapshot();
-                         unsubscribeSnapshot = null; 
-                     }
+                    if (unsubscribeSnapshot) {
+                        console.log("停止舊的 Snapshot 監聽...");
+                        unsubscribeSnapshot();
+                        unsubscribeSnapshot = null;
+                    }
 
-                     try {
-                         dbRef = doc(db, "artifacts", appId, "users", userId, "mailData", "singleton");
-                         console.log("Firestore 文件路徑:", `artifacts/${appId}/users/${userId}/mailData/singleton`);
+                    try {
+                        dbRef = doc(db, "artifacts", appId, "users", userId, "mailData", "singleton");
+                        console.log("Firestore 文件路徑:", `artifacts/${appId}/users/${userId}/mailData/singleton`);
 
-                         console.log("正在設定 Firestore Snapshot 監聽...");
-                         unsubscribeSnapshot = onSnapshot(dbRef, (docSnap) => {
-                             console.log("收到 Snapshot 更新"); 
-                             if (docSnap.exists()) {
-                                 console.log("文件存在，準備處理資料..."); 
-                                 handleDataLoad(docSnap.data());
-                             } else {
-                                 console.log("Firestore 文件不存在，準備載入預設值。"); 
-                                 handleDataLoad(null); 
-                             }
-                         }, (error) => {
-                             console.error("Firestore 監聽失敗:", error);
-                             displayError("無法監聽資料庫變更，請檢查網路連線或 Firestore 權限。錯誤：" + error.message);
-                             isDataLoaded = true; 
-                             if(loadingIndicator) loadingIndicator.style.display = 'none'; 
-                         });
-                         console.log("Snapshot 監聽已設定"); 
-                     } catch (e) {
-                         console.error("設定 Firestore 文件參照或監聽時出錯:", e);
-                         displayError("連接資料庫時發生錯誤：" + e.message);
-                         isDataLoaded = true;
-                         if(loadingIndicator) loadingIndicator.style.display = 'none';
-                     }
+                        console.log("正在設定 Firestore Snapshot 監聽...");
+                        unsubscribeSnapshot = onSnapshot(dbRef, (docSnap) => {
+                            console.log("收到 Snapshot 更新");
+                            if (docSnap.exists()) {
+                                console.log("文件存在，準備處理資料...");
+                                handleDataLoad(docSnap.data());
+                            } else {
+                                console.log("Firestore 文件不存在，準備載入預設值。");
+                                handleDataLoad(null);
+                            }
+                        }, (error) => {
+                            console.error("Firestore 監聽失敗:", error);
+                            displayError("無法監聽資料庫變更，請檢查網路連線或 Firestore 權限。錯誤：" + error.message);
+                            isDataLoaded = true;
+                            if(loadingIndicator) loadingIndicator.style.display = 'none';
+                        });
+                        console.log("Snapshot 監聽已設定");
+                    } catch (e) {
+                        console.error("設定 Firestore 文件參照或監聽時出錯:", e);
+                        displayError("連接資料庫時發生錯誤：" + e.message);
+                        isDataLoaded = true;
+                        if(loadingIndicator) loadingIndicator.style.display = 'none';
+                    }
 
-                 } else {
-                     console.log("使用者未登入 / 已登出。"); 
-                     if (unsubscribeSnapshot) {
-                         console.log("使用者未登入，停止 Snapshot 監聽..."); 
-                         unsubscribeSnapshot();
-                         unsubscribeSnapshot = null;
-                     }
-                     userId = null;
-                     dbRef = null;
-                     displayError("使用者未登入，無法載入或儲存資料。請重新整理頁面。"); 
-                     isDataLoaded = true; 
-                     if(loadingIndicator) loadingIndicator.style.display = 'none'; 
-                 }
-             });
+                } else {
+                    console.log("使用者未登入 / 已登出。");
+                    if (unsubscribeSnapshot) {
+                        console.log("使用者未登入，停止 Snapshot 監聽...");
+                        unsubscribeSnapshot();
+                        unsubscribeSnapshot = null;
+                    }
+                    userId = null;
+                    dbRef = null;
+                    displayError("使用者未登入，無法載入或儲存資料。請重新整理頁面。");
+                    isDataLoaded = true;
+                    if(loadingIndicator) loadingIndicator.style.display = 'none';
+                }
+            });
 
-             try {
-                 const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                 if (token) {
-                     console.log("正在使用 __initial_auth_token 登入...");
-                     await signInWithCustomToken(auth, token);
-                     console.log("使用 Token 登入成功"); 
-                 } else {
-                     console.log("未提供 Token，正在執行匿名登入...");
-                     await signInAnonymously(auth);
-                     console.log("匿名登入成功"); 
-                 }
-                 console.log("Firebase 登入流程完成。等待 onAuthStateChanged 回應..."); 
-             } catch (error) {
-                 console.error("Firebase 登入失敗:", error);
-                 displayError("無法登入 Firebase 驗證服務，請檢查您的網路連線或稍後重試。錯誤：" + error.message);
-                 isDataLoaded = true; 
-                 if(loadingIndicator) loadingIndicator.style.display = 'none'; 
-             }
+            try {
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    console.log("正在使用 __initial_auth_token 登入...");
+                    await signInWithCustomToken(auth, token);
+                    console.log("使用 Token 登入成功");
+                } else {
+                    console.log("未提供 Token，正在執行匿名登入...");
+                    await signInAnonymously(auth);
+                    console.log("匿名登入成功");
+                }
+                console.log("Firebase 登入流程完成。等待 onAuthStateChanged 回應...");
+            } catch (error) {
+                console.error("Firebase 登入失敗:", error);
+                displayError("無法登入 Firebase 驗證服務，請檢查您的網路連線或稍後重試。錯誤：" + error.message);
+                isDataLoaded = true;
+                if(loadingIndicator) loadingIndicator.style.display = 'none';
+            }
         }
 
 
         // --- 12. 程式啟動點 ---
         function initializeAppListeners() {
-            console.log("initializeAppListeners 執行"); // *** 新增 log ***
+            console.log("initializeAppListeners 執行");
             if (dateInput) {
                 dateInput.value = getFormattedDate(new Date());
                 state.currentDate = dateInput.value;
                 console.log("初始日期設定為:", state.currentDate);
             } else {
-                 console.error("找不到日期輸入框元素！");
+                console.error("找不到日期輸入框元素！");
             }
             
             console.log("渲染初始班次分頁...");
@@ -2135,22 +2121,22 @@ ${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
                     } else {
                         console.warn('Lucide icons library 可能未完全載入或 createIcons 方法不存在。');
                     }
-                }, 500); 
+                }, 500);
             } catch (error) {
                 console.error('初始化 Lucide icons 時出錯:', error);
             }
 
             // 綁定事件
-            console.log("綁定事件監聽器..."); 
+            console.log("綁定事件監聽器...");
             if (dateInput) {
                 dateInput.addEventListener('change', (e) => {
-                    console.log("日期變更觸發"); 
+                    console.log("日期變更觸發");
                     if (!isDataLoaded) {
-                        console.log("資料尚未載入，忽略日期變更事件"); 
-                        return; 
+                        console.log("資料尚未載入，忽略日期變更事件");
+                        return;
                     }
                     state.currentDate = e.target.value;
-                    console.log("日期變更為:", state.currentDate); 
+                    console.log("日期變更為:", state.currentDate);
                     renderDepartmentGrid();
                     updateTotals();
                 });
@@ -2160,18 +2146,23 @@ ${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
             if (resetBtn) resetBtn.addEventListener('click', showResetModal);
             if (cancelResetBtn) cancelResetBtn.addEventListener('click', hideResetModal);
             if (confirmResetBtn) confirmResetBtn.addEventListener('click', resetCurrentDateCounts);
-            if (monthlyReportBtn) monthlyReportBtn.addEventListener('click', showMonthlyReportModal);
-            if (cancelMonthlyReportBtn) cancelMonthlyReportBtn.addEventListener('click', hideMonthlyReportModal);
-            if (confirmMonthlyReportBtn) confirmMonthlyReportBtn.addEventListener('click', downloadMonthlyReport);
+            
+            // *** MODIFICATION: 報表下載事件綁定 ***
+            if (exportReportModalBtn) exportReportModalBtn.addEventListener('click', showReportDownloadModal);
+            if (cancelReportDownloadBtn) cancelReportDownloadBtn.addEventListener('click', hideReportDownloadModal);
+            if (confirmReportDownloadBtn) confirmReportDownloadBtn.addEventListener('click', handleReportDownload);
+            if (reportTypeMonth) reportTypeMonth.addEventListener('change', handleReportTypeChange);
+            if (reportTypeYear) reportTypeYear.addEventListener('change', handleReportTypeChange);
+            
             if (cancelAddDeptBtn) cancelAddDeptBtn.addEventListener('click', hideAddDeptModal);
             if (confirmAddDeptBtn) confirmAddDeptBtn.addEventListener('click', confirmAddDept);
             if (saveDataBtn) saveDataBtn.addEventListener('click', saveDataToFirestore);
             
-            // *** 新增：導覽事件 ***
+            // 導覽事件
             if (showInstructionsBtn) showInstructionsBtn.addEventListener('click', () => navigateTo('instructions'));
             if (backToCounterBtn) backToCounterBtn.addEventListener('click', () => navigateTo('counter'));
             
-            // *** 新增：分析 Modal 事件 ***
+            // 分析 Modal 事件
             if (showAnalysisModalBtn) showAnalysisModalBtn.addEventListener('click', showAnalysisModal);
             if (cancelAnalysisModalBtn) cancelAnalysisModalBtn.addEventListener('click', hideAnalysisModal);
             if (confirmGenerateAnalysisBtn) confirmGenerateAnalysisBtn.addEventListener('click', handleGenerateAnalysis);
@@ -2179,16 +2170,16 @@ ${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
             if (closeAnalysisResultsBottomBtn) closeAnalysisResultsBottomBtn.addEventListener('click', hideAnalysisResultsModal);
 
             
-            console.log("事件監聽器綁定完成"); 
+            console.log("事件監聽器綁定完成");
 
             // 啟動 Firebase
-            console.log("準備啟動 Firebase..."); 
+            console.log("準備啟動 Firebase...");
             initFirebase();
             
             console.log("腳本末尾");
         }
         
-        // *** 修改：確保 DOM 完全載入後再執行所有初始化 ***
+        // 確保 DOM 完全載入後再執行所有初始化
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initializeAppListeners);
         } else {
