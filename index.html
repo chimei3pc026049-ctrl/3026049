@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>院內郵件計數系統</title>
-    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 基礎字體與背景 */
@@ -197,11 +196,9 @@
 </head>
 <body>
 
-    <!-- 頂部導覽列 -->
     <header class="bg-white shadow-sm sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-indigo-600">院內郵件計數系統</h1>
-            <!-- 修改：新增操作說明按鈕 -->
             <div class="flex items-center space-x-4">
                 <button id="show-instructions-btn" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors flex items-center">
                     <i data-lucide="help-circle" class="mr-1 h-4 w-4"></i>
@@ -215,18 +212,13 @@
         </div>
     </header>
 
-    <!-- 計數器頁面包裝器 -->
     <div id="counter-page">
-        <!-- 班次選擇分頁 -->
         <nav class="bg-white sticky top-[80px] z-10 shadow-sm">
             <div id="shift-tabs-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto whitespace-nowrap -mb-px">
-                <!-- 班次分頁將由 JS 動態載入 -->
-            </div>
+                </div>
         </nav>
 
-        <!-- 主內容區域：單位格狀網格 -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <!-- 載入指示器 -->
             <div id="loading-indicator">
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -234,19 +226,12 @@
                 </svg>
                 正在載入資料...
             </div>
-            <!-- 錯誤訊息顯示區 -->
             <div id="error-message"></div>
-            <!-- 修改：減少 gap-3 -> gap-2, gap-4 -> gap-3 -->
-            <div id="department-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3 pb-24 hidden"> <!-- 修改：預設隱藏 -->
-                <!-- 單位按鈕將由 JS 動態載入 -->
-            </div>
+            <div id="department-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3 pb-24 hidden"> </div>
         </main>
 
-        <!-- 底部控制列 (固定) -->
         <footer class="control-bar fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200">
-            <!-- 修改：調整 flex-wrap 讓按鈕在小螢幕換行 -->
             <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-                <!-- 總計資訊 -->
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center space-x-2">
                         <i data-lucide="archive" class="text-indigo-600"></i>
@@ -260,8 +245,6 @@
                     </div>
                 </div>
 
-                <!-- 功能按鈕 -->
-                <!-- 修改：調整 flex-wrap 允許換行 -->
                 <div class="flex space-x-2 flex-wrap gap-2 justify-end">
                     <button id="save-data" class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all" disabled>
                         <i data-lucide="check" class="mr-2 h-5 w-5"></i>
@@ -275,12 +258,10 @@
                         <i data-lucide="file-spreadsheet" class="mr-2 h-5 w-5"></i>
                         匯出本日
                     </button>
-                    <!-- MODIFICATION: 將「月度報表」按鈕改為「報表下載」-->
                     <button id="export-report-modal-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
                         <i data-lucide="file-text" class="mr-2 h-5 w-5"></i>
                         報表下載
                     </button>
-                    <!-- 新增：統計分析按鈕 -->
                     <button id="show-analysis-modal" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
                         <i data-lucide="pie-chart" class="mr-2 h-5 w-5"></i>
                         統計分析
@@ -293,19 +274,13 @@
             </div>
         </footer>
     </div>
-    <!-- 結束：計數器頁面包裝器 -->
-
-
-    <!-- 新增：操作說明頁面 -->
     <div id="instructions-page" class="hidden">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
-            <!-- 返回按鈕 -->
             <button id="back-to-counter-btn" class="mb-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
                 <i data-lucide="arrow-left" class="mr-2 h-5 w-5"></i>
                 返回計數系統
             </button>
             
-            <!-- 說明書內容容器 -->
             <div class="instructions-content">
                 <h1>院內郵件計數系統 - 操作說明書</h1>
                 
@@ -399,7 +374,6 @@
                     <li>新增後，別忘了點擊「**儲存變更**」按鈕儲存。</li>
                 </ol>
 
-                <!-- MODIFICATION: 調整章節標題和內容配合報表下載按鈕變更 -->
                 <h2>7. 匯出報表 (Excel)</h2>
                 <p>系統提供 Excel 報表匯出功能，方便您彙報或存檔：</p>
                 <ol>
@@ -463,11 +437,6 @@
             </div>
         </div>
     </div>
-    <!-- 結束：操作說明頁面 -->
-
-
-    <!-- Modals (共用) -->
-    <!-- 新增單位 Modal (預設隱藏) -->
     <div id="add-dept-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
             <div class="flex items-center">
@@ -497,7 +466,6 @@
         </div>
     </div>
 
-    <!-- MODIFICATION: 月度報表 Modal 改為 報表下載 Modal (支援年報表) -->
     <div id="report-download-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
             <div class="flex items-center">
@@ -513,7 +481,6 @@
             </p>
             
             <div class="mt-4 space-y-4">
-                <!-- 報表類型選擇 -->
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">選擇報表類型</label>
                     <div class="flex items-center space-x-4">
@@ -528,7 +495,6 @@
                     </div>
                 </div>
 
-                <!-- 月份/年份輸入框 -->
                 <div>
                     <label for="report-period-input" id="report-period-label" class="block text-sm font-medium text-gray-700">選擇月份</label>
                     <input type="month" id="report-period-input" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -547,7 +513,6 @@
         </div>
     </div>
     
-    <!-- 統計分析月份選擇 Modal (預設隱藏) -->
     <div id="analysis-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
             <div class="flex items-center">
@@ -577,10 +542,8 @@
         </div>
     </div>
     
-    <!-- 分析結果 Modal (預設隱藏) -->
     <div id="analysis-results-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden p-4">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-4xl w-full max-h-[90vh] flex flex-col">
-            <!-- 標題 -->
             <div class="flex items-center justify-between pb-3 border-b">
                 <div class="flex items-center">
                     <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-teal-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -595,41 +558,29 @@
                 </button>
             </div>
             
-            <!-- 載入指示器 -->
             <div id="analysis-loading" class="flex flex-col items-center justify-center py-12">
                 <i data-lucide="loader-2" class="h-12 w-12 text-teal-600 animate-spin"></i>
                 <p class="mt-4 text-gray-600">正在產生分析報告，請稍候...</p>
             </div>
 
-            <!-- 結果內容 (可滾動) -->
             <div id="analysis-content" class="mt-4 overflow-y-auto hidden space-y-6">
-                <!-- 區塊 1: 院區總覽 -->
                 <div id="analysis-section-1">
                     <h4 class="text-xl font-semibold text-gray-800 mb-3">1. 院區收送總覽</h4>
-                    <!-- 內容將由 JS 填入 -->
-                </div>
-                <!-- 區塊 2: 單位明細 -->
+                    </div>
                 <div id="analysis-section-2">
-                    <!-- MODIFICATION: 標題調整 -->
                     <h4 class="text-xl font-semibold text-gray-800 mb-3">2. 單位總收送件數彙總</h4>
-                    <!-- 內容將由 JS 填入 -->
-                </div>
-                <!-- 區塊 3: AI 建議 -->
+                    </div>
                 <div id="analysis-section-3">
                     <h4 class="text-xl font-semibold text-gray-800 mb-3">3. AI 建議</h4>
-                    <!-- AI 載入 -->
                     <div id="ai-suggestion-loading" class="flex items-center text-gray-500">
                         <i data-lucide="loader-2" class="h-5 w-5 mr-2 animate-spin"></i>
                         AI 正在分析數據並產生建議...
                     </div>
-                    <!-- AI 內容 -->
                     <div id="ai-suggestion-content" class="text-gray-700 max-w-none">
-                        <!-- 內容將由 JS 填入 -->
-                    </div>
+                        </div>
                 </div>
             </div>
 
-            <!-- 底部按鈕 (僅關閉) -->
             <div class="mt-6 pt-4 border-t flex justify-end">
                 <button id="close-analysis-results-bottom" type="button" class="bg-white hover:bg-gray-50 border border-gray-300 rounded-md shadow-sm py-2 px-4 text-sm font-medium text-gray-700">
                     關閉
@@ -639,7 +590,6 @@
     </div>
 
 
-    <!-- 重設確認 Modal (預設隱藏) -->
     <div id="reset-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
             <div class="flex items-center">
@@ -664,9 +614,6 @@
         </div>
     </div>
 
-    <!--
-      外部程式庫腳本
-    -->
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/lucide.min.js"></script>
@@ -690,20 +637,20 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         // NOTE: getAnalytics is not imported via CDN as it requires an additional script/import structure.
 
-        // --- 0. Firebase 設定與初始化 ---
+        // --- 0. Firebase 設定與初始化 (*** 核心修改 ***) ---
         console.log("腳本開始執行...");
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        console.log("App ID:", appId);
+        console.log("App ID (來自平台):", appId);
         const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
         let firebaseConfig = null;
 
-        // 您提供的 Firebase 配置
+        // 您提供的 Firebase 配置 (作為主要配置)
         const USER_PROVIDED_FIREBASE_CONFIG = {
             apiKey: "AIzaSyDSG0XE2D1Kdptlxl9oD7QPom3fupB6OHQ",
             authDomain: "base-9b8b4.firebaseapp.com",
             projectId: "base-9b8b4",
-            storageBucket: "base-9b8b4.firebasestorage.app",
+            storageBucket: "base-9b8b4.firebasestorage.app", // 確保 .app 結尾
             messagingSenderId: "865059635319",
             appId: "1:865059635319:web:20cd2aee4ea7d9f5288672",
             measurementId: "G-YSW55LRG47"
@@ -720,13 +667,13 @@
                     console.log("Firebase 設定載入成功 (使用平台注入配置)");
                 }
             } catch (e) {
-                console.warn("解析平台配置失敗，將使用使用者提供配置。", e);
+                console.warn("解析平台配置失敗，將使用您提供的配置。", e);
             }
         } 
         
         // 2. 如果平台配置無效或不存在，使用使用者提供的配置
         if (!firebaseConfig) {
-             console.log("使用使用者提供的配置。");
+             console.log("使用您提供的配置。");
              firebaseConfig = USER_PROVIDED_FIREBASE_CONFIG;
         }
 
@@ -757,20 +704,20 @@
         }
 
         let dbRef = null;
-        let userId = null;
+        let userId = null; // 仍然保留，用於日誌記錄
         let unsubscribeSnapshot = null;
         let isDataLoaded = false;
         let isDataDirty = false;
 
         // --- 1. 系統常數 ---
         const SHIFTS = [
-            { id: 'S1', type: '送件', time: '08:15', route: '佳里→永康', campus: '永康' }, // ADDED campus field
-            { id: 'S2', type: '送件', time: '12:15', route: '佳里→永康', campus: '永康' }, // ADDED campus field
-            { id: 'S3', type: '送件', time: '13:00', route: '佳里→柳營', campus: '柳營' }, // ADDED campus field
-            { id: 'S4', type: '送件', time: '15:15', route: '佳里→永康', campus: '永康' }, // ADDED campus field
-            { id: 'R1', type: '收件', time: '10:00', route: '永康→佳里', campus: '永康' }, // ADDED campus field
-            { id: 'R2', type: '收件', time: '13:00', route: '柳營→佳里', campus: '柳營' }, // ADDED campus field
-            { id: 'R3', type: '收件', time: '14:00', route: '永康→佳里', campus: '永康' }, // ADDED campus field
+            { id: 'S1', type: '送件', time: '08:15', route: '佳里→永康', campus: '永康' },
+            { id: 'S2', type: '送件', time: '12:15', route: '佳里→永康', campus: '永康' },
+            { id: 'S3', type: '送件', time: '13:00', route: '佳里→柳營', campus: '柳營' },
+            { id: 'S4', type: '送件', time: '15:15', route: '佳里→永康', campus: '永康' },
+            { id: 'R1', type: '收件', time: '10:00', route: '永康→佳里', campus: '永康' },
+            { id: 'R2', type: '收件', time: '13:00', route: '柳營→佳里', campus: '柳營' },
+            { id: 'R3', type: '收件', time: '14:00', route: '永康→佳里', campus: '永康' },
         ];
         
         const DEFAULT_DEPARTMENTS = [
@@ -1722,7 +1669,7 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
                 let hasData = depts.some(deptName => (unitSummary[deptName].totalSend + unitSummary[deptName].totalReceive) > 0);
 
                 if (!hasData) {
-                    tableHtml += `<p class="text-gray-500 italic">無 ${campus} 院區的郵件記錄。</p>`;
+                    tableHtml += `<p class="text-gray-500 italic mt-4">無 ${campus} 院區的郵件記錄。</p>`;
                     return tableHtml;
                 }
                 
@@ -2025,7 +1972,7 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
         }
 
 
-        // --- 11. Firebase 初始化與資料綁定 ---
+        // --- 11. Firebase 初始化與資料綁定 (*** 核心修改 ***) ---
         function displayError(message) {
             console.error("錯誤:", message);
             if (errorMessageDiv) {
@@ -2112,8 +2059,8 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             onAuthStateChanged(auth, (user) => {
                 console.log("onAuthStateChanged 觸發");
                 if (user) {
-                    console.log("Firebase 認證成功, User ID:", user.uid);
-                    userId = user.uid;
+                    console.log("Firebase 認證成功 (匿名), User ID:", user.uid);
+                    userId = user.uid; // 記錄下來，但不用於路徑
 
                     if (unsubscribeSnapshot) {
                         console.log("停止舊的 Snapshot 監聽...");
@@ -2122,17 +2069,22 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
                     }
 
                     try {
-                        dbRef = doc(db, "artifacts", appId, "users", userId, "mailData", "singleton");
-                        console.log("Firestore 文件路徑:", `artifacts/${appId}/users/${userId}/mailData/singleton`);
+                        // *** 核心修改：使用共享路徑 ***
+                        // 舊路徑: doc(db, "artifacts", appId, "users", userId, "mailData", "singleton");
+                        // 新路徑:
+                        const appDataPath = `artifacts/${appId}/mailData/singleton`;
+                        dbRef = doc(db, "artifacts", appId, "mailData", "singleton");
+                        
+                        console.log("Firestore 文件路徑 (共享):", appDataPath);
 
-                        console.log("正在設定 Firestore Snapshot 監聽...");
+                        console.log("正在設定 Firestore Snapshot 監聽 (共享)...");
                         unsubscribeSnapshot = onSnapshot(dbRef, (docSnap) => {
-                            console.log("收到 Snapshot 更新");
+                            console.log("收到 Snapshot 更新 (共享)");
                             if (docSnap.exists()) {
-                                console.log("文件存在，準備處理資料...");
+                                console.log("共享文件存在，準備處理資料...");
                                 handleDataLoad(docSnap.data());
                             } else {
-                                console.log("Firestore 文件不存在，準備載入預設值。");
+                                console.log("Firestore 共享文件不存在，準備載入預設值。");
                                 handleDataLoad(null);
                             }
                         }, (error) => {
@@ -2165,15 +2117,20 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             });
 
             try {
-                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (token) {
-                    console.log("正在使用 __initial_auth_token 登入...");
-                    await signInWithCustomToken(auth, token);
-                    console.log("使用 Token 登入成功");
+                // 檢查是否已經有匿名使用者，如果沒有才登入
+                if (!auth.currentUser) {
+                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    if (token) {
+                        console.log("正在使用 __initial_auth_token 登入...");
+                        await signInWithCustomToken(auth, token);
+                        console.log("使用 Token 登入成功");
+                    } else {
+                        console.log("未提供 Token 且無現行使用者，正在執行匿名登入...");
+                        await signInAnonymously(auth);
+                        console.log("匿名登入成功");
+                    }
                 } else {
-                    console.log("未提供 Token，正在執行匿名登入...");
-                    await signInAnonymously(auth);
-                    console.log("匿名登入成功");
+                    console.log("偵測到現行使用者，跳過登入步驟。");
                 }
                 console.log("Firebase 登入流程完成。等待 onAuthStateChanged 回應...");
             } catch (error) {
@@ -2223,7 +2180,7 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
                 dateInput.addEventListener('change', (e) => {
                     console.log("日期變更觸發");
                     if (!isDataLoaded) {
-                        console.log("資料尚未載入，忽略日期變更事件");
+                        console.log("資料尚未載入，忽略日期變K_change事件");
                         return;
                     }
                     state.currentDate = e.target.value;
