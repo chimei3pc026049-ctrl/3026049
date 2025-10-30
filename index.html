@@ -1,6 +1,4 @@
-
-    
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
@@ -324,7 +322,7 @@
                     <li><strong>頂部區域</strong>：
                         <ul>
                             <li>系統標題：「院內郵件計數系統」。</li>
-                            <li>**日期選擇器**：顯示目前操作的日期，可點擊更改。</li>
+                            <li><strong>日期選擇器</strong>：顯示目前操作的日期，可點擊更改。</li>
                         </ul>
                     </li>
                     <li><strong>班次分頁</strong>：
@@ -954,11 +952,11 @@
                 // 確保說明頁面的 lucide 圖示被渲染
                  // *** 使用 try-catch 增加 robustness ***
                 if (typeof lucide !== 'undefined' && lucide.createIcons) {
-                    try {
-                        lucide.createIcons();
-                    } catch (e) {
-                         console.error("在說明頁面渲染 Lucide 圖示時出錯:", e);
-                    }
+                     try {
+                         lucide.createIcons();
+                     } catch (e) {
+                          console.error("在說明頁面渲染 Lucide 圖示時出錯:", e);
+                     }
                 }
             }
         }
@@ -1602,9 +1600,9 @@
                 month: yearMonth,
                 campusTotals: analysis,
                 topUnits: Object.entries(allDepts)
-                             .sort((a, b) => b[1] - a[1]) // 排序
-                             .slice(0, 10) // 取前10名
-                             .map(item => ({ unit: item[0], total: item[1] })) 
+                                    .sort((a, b) => b[1] - a[1]) // 排序
+                                    .slice(0, 10) // 取前10名
+                                    .map(item => ({ unit: item[0], total: item[1] })) 
             };
             
             const aiPrompt = `
@@ -1757,42 +1755,49 @@ ${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
             try {
                 const aiResult = await callGeminiAPI(data.aiPrompt);
                 
-                // 將 AI 回應 (可能是 Markdown) 轉換為 HTML
-                let htmlResult = aiResult
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-                    .replace(/^\* (.*$)/gm, '<li>$1</li>') // Convert '* item' to '<li>item</li>'
-                    .replace(/^\d+\. (.*$)/gm, '<li>$1</li>') // Convert '1. item' to '<li>item</li>'
-                    
-                    // 處理列表嵌套
-                    .replace(/(<li>.*<\/li>)/gm, '<ul>$1</ul>') // Wrap <li> block in <ul>
-                    .replace(/<\/ul>\s*<ul>/g, '') // Merge adjacent <ul>
-                    .replace(/<\/li>\s*<li>/g, '</li><li>') // Merge <li>
-                    
-                    .replace(/\n\n/g, '<p></p>') // Double newline -> paragraph
-                    .replace(/\n/g, '<br />') // Single newline -> <br>
-                    .replace(/<p><\/p>/g, '') // Clean empty paragraphs
-                    
-                    // 清理 <br> 和列表的錯誤組合
-                    .replace(/<br \/><ul>/g, '<ul>')
-                    .replace(/<br \/><li>/g, '<li>')
-                    .replace(/<\/li><br \/>/g, '</li>')
-                    .replace(/<\/ul><br \/>/g, '</ul>');
+                // *** 修改：檢查 AI 回應是否為錯誤訊息 ***
+                if (aiResult.startsWith("AI 分析失敗")) {
+                    console.warn("AI 分析回傳錯誤訊息:", aiResult);
+                    // 使用 Tailwind 的紅色文字來顯示錯誤
+                    aiSuggestionContent.innerHTML = `<p class="text-red-600 font-medium">${aiResult}</p>`;
+                } else {
+                    // 將 AI 回應 (可能是 Markdown) 轉換為 HTML
+                    let htmlResult = aiResult
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+                        .replace(/^\* (.*$)/gm, '<li>$1</li>') // Convert '* item' to '<li>item</li>'
+                        .replace(/^\d+\. (.*$)/gm, '<li>$1</li>') // Convert '1. item' to '<li>item</li>'
+                        
+                        // 處理列表嵌套
+                        .replace(/(<li>.*<\/li>)/gm, '<ul>$1</ul>') // Wrap <li> block in <ul>
+                        .replace(/<\/ul>\s*<ul>/g, '') // Merge adjacent <ul>
+                        .replace(/<\/li>\s*<li>/g, '</li><li>') // Merge <li>
+                        
+                        .replace(/\n\n/g, '<p></p>') // Double newline -> paragraph
+                        .replace(/\n/g, '<br />') // Single newline -> <br>
+                        .replace(/<p><\/p>/g, '') // Clean empty paragraphs
+                        
+                        // 清理 <br> 和列表的錯誤組合
+                        .replace(/<br \/><ul>/g, '<ul>')
+                        .replace(/<br \/><li>/g, '<li>')
+                        .replace(/<\/li><br \/>/g, '</li>')
+                        .replace(/<\/ul><br \/>/g, '</ul>');
                 
-                // 將不在列表中的 <br> 轉換為 <p>
-                const segments = htmlResult.split(/(<ul>.*?<\/ul>)/g); // 按列表分割
-                htmlResult = segments.map(seg => {
-                    if (seg.startsWith('<ul>')) {
-                        return seg; // 列表保持原樣
-                    }
-                    // 非列表部分，用 <p> 包裝
-                    return seg.split(/<br \/>\s*<br \/>/g) // 按段落分割
-                              .map(p => p.trim())
-                              .filter(p => p.length > 0)
-                              .map(p => `<p>${p.replace(/<br \/>/g, ' ')}</p>`) // 將段落內的 <br> 轉為空白
-                              .join('');
-                }).join('');
+                    // 將不在列表中的 <br> 轉換為 <p>
+                    const segments = htmlResult.split(/(<ul>.*?<\/ul>)/g); // 按列表分割
+                    htmlResult = segments.map(seg => {
+                        if (seg.startsWith('<ul>')) {
+                            return seg; // 列表保持原樣
+                        }
+                        // 非列表部分，用 <p> 包裝
+                        return seg.split(/<br \/>\s*<br \/>/g) // 按段落分割
+                                .map(p => p.trim())
+                                .filter(p => p.length > 0)
+                                .map(p => `<p>${p.replace(/<br \/>/g, ' ')}</p>`) // 將段落內的 <br> 轉為空白
+                                .join('');
+                    }).join('');
 
-                aiSuggestionContent.innerHTML = htmlResult;
+                    aiSuggestionContent.innerHTML = htmlResult;
+                }
             } catch (error) {
                 console.error("AI 分析失敗:", error);
                 aiSuggestionContent.innerHTML = `<p class="text-red-500">AI 建議載入失敗：${error.message}</p>`;
@@ -2123,13 +2128,13 @@ ${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
             console.log("準備初始化 Lucide icons...");
             try {
                 setTimeout(() => {
-                     if (typeof lucide !== 'undefined' && lucide.createIcons) {
-                         console.log("正在初始化 Lucide icons...");
-                         lucide.createIcons();
-                         console.log("Lucide icons 初始化成功");
-                     } else {
-                         console.warn('Lucide icons library 可能未完全載入或 createIcons 方法不存在。');
-                     }
+                    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                        console.log("正在初始化 Lucide icons...");
+                        lucide.createIcons();
+                        console.log("Lucide icons 初始化成功");
+                    } else {
+                        console.warn('Lucide icons library 可能未完全載入或 createIcons 方法不存在。');
+                    }
                 }, 500); 
             } catch (error) {
                 console.error('初始化 Lucide icons 時出錯:', error);
@@ -2139,15 +2144,15 @@ ${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
             console.log("綁定事件監聽器..."); 
             if (dateInput) {
                 dateInput.addEventListener('change', (e) => {
-                     console.log("日期變更觸發"); 
-                     if (!isDataLoaded) {
-                         console.log("資料尚未載入，忽略日期變更事件"); 
-                         return; 
-                     }
-                     state.currentDate = e.target.value;
-                     console.log("日期變更為:", state.currentDate); 
-                     renderDepartmentGrid();
-                     updateTotals();
+                    console.log("日期變更觸發"); 
+                    if (!isDataLoaded) {
+                        console.log("資料尚未載入，忽略日期變更事件"); 
+                        return; 
+                    }
+                    state.currentDate = e.target.value;
+                    console.log("日期變更為:", state.currentDate); 
+                    renderDepartmentGrid();
+                    updateTotals();
                 });
             }
             if (toggleEditBtn) toggleEditBtn.addEventListener('click', toggleEditMode);
@@ -2194,4 +2199,3 @@ ${aiPromptData.topUnits.map(u => `   - ${u.unit}: ${u.total} 件`).join('\n')}
     </script>
 </body>
 </html>
-
