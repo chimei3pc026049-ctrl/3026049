@@ -404,7 +404,7 @@
                     <li>系統會彈出一個新的「**月度統計分析報告**」視窗，內容包含：
                         <ul>
                             <li>**院區收送總覽**：顯示永康和柳營院區的「總送件」、「總收件」以及各班次的件數統計。</li>
-                            <li>**單位明細**：以表格顯示各院區、各單位在不同班次的詳細件數。</li>
+                            <li>**單位明細**：**以總彙總表格**顯示各單位在該月的總送件與總收件數，並按件數降序排列。</li>
                             <li>**AI 建議**：系統會自動將當月數據傳送給 AI 進行分析，並提供關於流程優化、件數平衡等方面的具體建議。（此過程可能需要幾秒鐘）</li>
                         </ul>
                     </li>
@@ -568,7 +568,7 @@
                     <h4 class="text-xl font-semibold text-gray-800 mb-3">1. 院區收送總覽</h4>
                     </div>
                 <div id="analysis-section-2">
-                    <h4 class="text-xl font-semibold text-gray-800 mb-3">2. 單位明細</h4>
+                    <h4 class="text-xl font-semibold text-gray-800 mb-3">2. 本月單位總收送件數彙總</h4>
                     </div>
                 <div id="analysis-section-3">
                     <h4 class="text-xl font-semibold text-gray-800 mb-3">3. AI 建議</h4>
@@ -761,16 +761,16 @@
         const confirmResetBtn = document.getElementById('confirm-reset');
         const resetDateDisplay = document.getElementById('reset-date-display');
         
-        // *** MODIFICATION: 報表下載相關 DOM 節點變更 ***
-        const exportReportModalBtn = document.getElementById('export-report-modal-btn'); // 原: monthlyReportBtn
-        const reportDownloadModal = document.getElementById('report-download-modal'); // 原: monthlyReportModal
-        const cancelReportDownloadBtn = document.getElementById('cancel-report-download'); // 原: cancelMonthlyReportBtn
-        const confirmReportDownloadBtn = document.getElementById('confirm-report-download'); // 原: confirmMonthlyReportBtn
-        const reportPeriodInput = document.getElementById('report-period-input'); // 原: monthInput
-        const reportPeriodLabel = document.getElementById('report-period-label'); // 新增
-        const reportDownloadError = document.getElementById('report-download-error'); // 原: monthlyReportError
-        const reportTypeMonth = document.getElementById('report-type-month'); // 新增
-        const reportTypeYear = document.getElementById('report-type-year'); // 新增
+        // MODIFICATION: 報表下載相關 DOM 節點變更
+        const exportReportModalBtn = document.getElementById('export-report-modal-btn'); 
+        const reportDownloadModal = document.getElementById('report-download-modal'); 
+        const cancelReportDownloadBtn = document.getElementById('cancel-report-download'); 
+        const confirmReportDownloadBtn = document.getElementById('confirm-report-download'); 
+        const reportPeriodInput = document.getElementById('report-period-input'); 
+        const reportPeriodLabel = document.getElementById('report-period-label'); 
+        const reportDownloadError = document.getElementById('report-download-error'); 
+        const reportTypeMonth = document.getElementById('report-type-month'); 
+        const reportTypeYear = document.getElementById('report-type-year'); 
         
         const addDeptModal = document.getElementById('add-dept-modal');
         const cancelAddDeptBtn = document.getElementById('cancel-add-dept');
@@ -1209,7 +1209,7 @@
             }
         }
         
-        // *** MODIFICATION: 統一的報表匯出邏輯 (處理月報表和年報表) ***
+        // MODIFICATION: 統一的報表匯出邏輯 (處理月報表和年報表)
         /**
          * 匯出選定的報表 (月報表或年報表)
          * @param {string} period - YYYY-MM (月報表) 或 YYYY (年報表)
@@ -1402,7 +1402,7 @@
             }
         }
         
-        // --- 9. AI 分析功能 (不變) ---
+        // --- 9. AI 分析功能 (已修改) ---
         
         /**
          * 呼叫 Gemini API
@@ -1470,7 +1470,7 @@
         }
         
         /**
-         * 產生月度分析所需的數據
+         * 產生月度分析所需的數據 (已修改，輸出 unitSummary)
          * @param {string} yearMonth - YYYY-MM 格式的月份
          * @returns {object | null} - 包含分析數據的物件，或在無資料時返回 null
          */
@@ -1489,12 +1489,8 @@
                 liuying: { send: 0, receive: 0, shifts: {} }
             };
 
-            let unitDetails = {
-                yongkang: { send: {}, receive: {} },
-                liuying: { send: {}, receive: {} }
-            };
-            
-            let allDepts = {}; // 用於AI prompt
+            // MODIFICATION: 新增 unitSummary 來彙總單位總收送件數
+            let unitSummary = {}; 
 
             // 初始化班次計數器
             SHIFTS.forEach(shift => {
@@ -1516,8 +1512,8 @@
                     if (!dept || dept.id === 'DYN_ADD') return;
                     const deptName = dept.name;
                     
-                    if (!allDepts[deptName]) allDepts[deptName] = 0;
-
+                    if (!unitSummary[deptName]) unitSummary[deptName] = { totalSend: 0, totalReceive: 0 };
+                    
                     Object.keys(dateData[deptId]).forEach(shiftId => {
                         const count = dateData[deptId][shiftId] || 0;
                         if (count === 0) return;
@@ -1525,40 +1521,29 @@
                         const shift = SHIFTS.find(s => s.id === shiftId);
                         if (!shift) return;
                         
-                        allDepts[deptName] += count; // 累加單位總量
+                        // 總結單位收送件數 (新邏輯)
+                        if (shift.type === '送件') {
+                            unitSummary[deptName].totalSend += count;
+                        } else if (shift.type === '收件') {
+                            unitSummary[deptName].totalReceive += count;
+                        }
 
-                        // 檢查院區和類型
+                        // 總結院區班次數據 (原邏輯)
                         if (shift.route.includes('永康')) {
                             if (shift.type === '送件') {
                                 analysis.yongkang.send += count;
                                 analysis.yongkang.shifts[shift.id].count += count;
-                                // 紀錄單位明細
-                                if (!unitDetails.yongkang.send[deptName]) unitDetails.yongkang.send[deptName] = {};
-                                if (!unitDetails.yongkang.send[deptName][shift.id]) unitDetails.yongkang.send[deptName][shift.id] = 0;
-                                unitDetails.yongkang.send[deptName][shift.id] += count;
                             } else { // 收件
                                 analysis.yongkang.receive += count;
                                 analysis.yongkang.shifts[shift.id].count += count;
-                                // 紀錄單位明細
-                                if (!unitDetails.yongkang.receive[deptName]) unitDetails.yongkang.receive[deptName] = {};
-                                if (!unitDetails.yongkang.receive[deptName][shift.id]) unitDetails.yongkang.receive[deptName][shift.id] = 0;
-                                unitDetails.yongkang.receive[deptName][shift.id] += count;
                             }
                         } else if (shift.route.includes('柳營')) {
                             if (shift.type === '送件') {
                                 analysis.liuying.send += count;
                                 analysis.liuying.shifts[shift.id].count += count;
-                                // 紀錄單位明細
-                                if (!unitDetails.liuying.send[deptName]) unitDetails.liuying.send[deptName] = {};
-                                if (!unitDetails.liuying.send[deptName][shift.id]) unitDetails.liuying.send[deptName][shift.id] = 0;
-                                unitDetails.liuying.send[deptName][shift.id] += count;
                             } else { // 收件
                                 analysis.liuying.receive += count;
                                 analysis.liuying.shifts[shift.id].count += count;
-                                // 紀錄單位明細
-                                if (!unitDetails.liuying.receive[deptName]) unitDetails.liuying.receive[deptName] = {};
-                                if (!unitDetails.liuying.receive[deptName][shift.id]) unitDetails.liuying.receive[deptName][shift.id] = 0;
-                                unitDetails.liuying.receive[deptName][shift.id] += count;
                             }
                         }
                     });
@@ -1569,10 +1554,10 @@
             const aiPromptData = {
                 month: yearMonth,
                 campusTotals: analysis,
-                topUnits: Object.entries(allDepts)
-                             .sort((a, b) => b[1] - a[1]) // 排序
-                             .slice(0, 10) // 取前10名
-                             .map(item => ({ unit: item[0], total: item[1] }))
+                topUnits: Object.entries(unitSummary)
+                    .map(([unit, totals]) => ({ unit, total: totals.totalSend + totals.totalReceive }))
+                    .sort((a, b) => b.total - a.total)
+                    .slice(0, 10)
             };
             
             const aiPrompt = `
@@ -1583,30 +1568,31 @@
     - 柳營院區: 送件 ${aiPromptData.campusTotals.liuying.send} 件, 收件 ${aiPromptData.campusTotals.liuying.receive} 件
 
 2. 永康院區-各班次件數:
-${Object.values(aiPromptData.campusTotals.yongkang.shifts).map(s => `    - ${s.name}: ${s.count} 件`).join('\n')}
+${Object.values(analysis.yongkang.shifts).filter(s => s.count > 0).map(s => `    - ${s.name}: ${s.count} 件`).join('\n')}
 
 3. 柳營院區-各班次件數:
-${Object.values(aiPromptData.campusTotals.liuying.shifts).map(s => `    - ${s.name}: ${s.count} 件`).join('\n')}
+${Object.values(analysis.liuying.shifts).filter(s => s.count > 0).map(s => `    - ${s.name}: ${s.count} 件`).join('\n')}
 
-4. 本月郵件量前 10 名單位:
+4. 本月郵件量前 10 名單位 (總送收件):
 ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
 
 請基於以上數據提供分析與建議。
 `;
 
-            console.log("分析數據產生完畢:", { analysis, unitDetails, aiPrompt });
-            return { analysis, unitDetails, aiPrompt };
+            console.log("分析數據產生完畢:", { analysis, unitSummary, aiPrompt });
+            // MODIFICATION: 回傳 unitSummary
+            return { analysis, unitSummary, aiPrompt };
         }
         
         /**
-         * 將分析數據渲染到 Modal 中
-         * @param {object} analysis - 來自 generateAnalysisData 的院區總覽數據
-         * @param {object} unitDetails - 來自 generateAnalysisData 的單位明細數據
+         * 將分析數據渲染到 Modal 中 (已修改，渲染單位彙總表)
+         * @param {object} analysis - 院區總覽數據
+         * @param {object} unitSummary - 單位送件與收件總數彙總
          */
-        function renderAnalysisResults(analysis, unitDetails) {
+        function renderAnalysisResults(analysis, unitSummary) {
             console.log("正在渲染分析結果...");
             
-            // --- 1. 渲染院區總覽 ---
+            // --- 1. 渲染院區總覽 --- 
             let html1 = '<div class="grid grid-cols-1 md:grid-cols-2 gap-6">';
             
             // 永康
@@ -1616,7 +1602,8 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             html1 += `<p class="text-gray-700 mb-3"><strong>總收件:</strong> <span class="text-xl font-bold text-green-600">${analysis.yongkang.receive}</span> 件</p>`;
             html1 += '<h6 class="font-semibold text-gray-600 mb-2">各班次明細:</h6><ul class="list-disc list-inside space-y-1 text-sm">';
             Object.values(analysis.yongkang.shifts).forEach(shift => {
-                html1 += `<li>${shift.name}: <span class="font-medium">${shift.count}</span> 件</li>`;
+                // 僅顯示有計數的班次
+                if (shift.count > 0) html1 += `<li>${shift.name}: <span class="font-medium">${shift.count}</span> 件</li>`;
             });
             html1 += '</ul></div>';
 
@@ -1627,57 +1614,62 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             html1 += `<p class="text-gray-700 mb-3"><strong>總收件:</strong> <span class="text-xl font-bold text-green-600">${analysis.liuying.receive}</span> 件</p>`;
             html1 += '<h6 class="font-semibold text-gray-600 mb-2">各班次明細:</h6><ul class="list-disc list-inside space-y-1 text-sm">';
             Object.values(analysis.liuying.shifts).forEach(shift => {
-                html1 += `<li>${shift.name}: <span class="font-medium">${shift.count}</span> 件</li>`;
+                // 僅顯示有計數的班次
+                if (shift.count > 0) html1 += `<li>${shift.name}: <span class="font-medium">${shift.count}</span> 件</li>`;
             });
             html1 += '</ul></div>';
             html1 += '</div>';
             analysisSection1.innerHTML = html1;
 
-            // --- 2. 渲染單位明細 ---
+            // --- MODIFICATION: 渲染單位總覽 (單一彙總表) ---
             let html2 = '<div class="space-y-4">';
             
-            const renderDeptTable = (title, data, campus, type) => {
-                let tableHtml = `<h5 class="text-lg font-semibold text-gray-700 mt-4 mb-2">${title}</h5>`;
-                const depts = Object.keys(data).sort();
-                if (depts.length === 0) {
-                    tableHtml += '<p class="text-gray-500 italic">無資料</p>';
-                    return tableHtml;
-                }
+            const depts = Object.keys(unitSummary).sort((a, b) => {
+                // 依總件數降序排列
+                const totalA = unitSummary[a].totalSend + unitSummary[a].totalReceive;
+                const totalB = unitSummary[b].totalSend + unitSummary[b].totalReceive;
+                return totalB - totalA; 
+            });
+            
+            if (depts.length === 0) {
+                html2 += '<p class="text-gray-500 italic">無任何單位有郵件記錄。</p>';
+            } else {
+                let grandTotalSend = 0;
+                let grandTotalReceive = 0;
                 
-                // 獲取所有相關班次 (從 SHIFTS)
-                const relevantShifts = SHIFTS.filter(s => 
-                    s.route.includes(campus) && s.type === type
-                ).sort((a,b) => a.time.localeCompare(b.time)); // 確保班次按時間排序
+                // 標題已從 HTML 結構中移除，改為在最頂層
+                html2 += '<div class="overflow-x-auto">'; // 增加滾動條以防表格過寬
+                html2 += '<table class="min-w-full divide-y divide-gray-200 text-sm">';
+                html2 += '<thead class="bg-gray-100"><tr><th class="px-3 py-2 text-left font-medium text-gray-600">單位名稱</th>';
+                html2 += '<th class="px-3 py-2 text-right font-medium text-blue-600">總送件數</th>';
+                html2 += '<th class="px-3 py-2 text-right font-medium text-green-600">總收件數</th>';
+                html2 += '<th class="px-3 py-2 text-right font-medium text-gray-800">總計</th></tr></thead>';
                 
-                if(relevantShifts.length === 0) {
-                     tableHtml += '<p class="text-gray-500 italic">無對應班次設定</p>';
-                     return tableHtml;
-                }
-
-                tableHtml += '<table class="min-w-full divide-y divide-gray-200 text-sm">';
-                tableHtml += '<thead class="bg-gray-100"><tr><th class="px-3 py-2 text-left font-medium text-gray-600">單位</th>';
-                relevantShifts.forEach(s => tableHtml += `<th class="px-3 py-2 text-left font-medium text-gray-600">${s.time}</th>`);
-                tableHtml += '<th class="px-3 py-2 text-left font-medium text-gray-800">小計</th></tr></thead>';
-                
-                tableHtml += '<tbody class="bg-white divide-y divide-gray-200">';
+                html2 += '<tbody class="bg-white divide-y divide-gray-200">';
                 depts.forEach(deptName => {
-                    tableHtml += `<tr><td class="px-3 py-2 font-medium text-gray-900">${deptName}</td>`;
-                    let rowTotal = 0;
-                    relevantShifts.forEach(s => {
-                        const count = data[deptName]?.[s.id] || 0; // 增加檢查
-                        tableHtml += `<td class="px-3 py-2 text-gray-700">${count > 0 ? count : ''}</td>`;
-                        rowTotal += count;
-                    });
-                    tableHtml += `<td class="px-3 py-2 font-bold text-gray-900">${rowTotal}</td></tr>`;
-                });
-                tableHtml += '</tbody></table>';
-                return tableHtml;
-            };
+                    const totals = unitSummary[deptName];
+                    const total = totals.totalSend + totals.totalReceive;
+                    
+                    // 只顯示總數 > 0 的單位
+                    if (total === 0) return; 
 
-            html2 += renderDeptTable('永康院區 - 送件單位明細', unitDetails.yongkang.send, '永康', '送件');
-            html2 += renderDeptTable('永康院區 - 收件單位明細', unitDetails.yongkang.receive, '永康', '收件');
-            html2 += renderDeptTable('柳營院區 - 送件單位明細', unitDetails.liuying.send, '柳營', '送件');
-            html2 += renderDeptTable('柳營院區 - 收件單位明細', unitDetails.liuying.receive, '柳營', '收件');
+                    grandTotalSend += totals.totalSend;
+                    grandTotalReceive += totals.totalReceive;
+                    
+                    html2 += `<tr><td class="px-3 py-2 font-medium text-gray-900">${deptName}</td>`;
+                    html2 += `<td class="px-3 py-2 text-right text-blue-600">${totals.totalSend || ''}</td>`;
+                    html2 += `<td class="px-3 py-2 text-right text-green-600">${totals.totalReceive || ''}</td>`;
+                    html2 += `<td class="px-3 py-2 text-right font-bold text-gray-900">${total}</td></tr>`;
+                });
+
+                // 總計行
+                html2 += `<tr class="bg-gray-200 font-bold"><td class="px-3 py-2 text-gray-900">總計</td>`;
+                html2 += `<td class="px-3 py-2 text-right text-blue-700">${grandTotalSend}</td>`;
+                html2 += `<td class="px-3 py-2 text-right text-green-700">${grandTotalReceive}</td>`;
+                html2 += `<td class="px-3 py-2 text-right text-indigo-700">${grandTotalSend + grandTotalReceive}</td></tr>`;
+
+                html2 += '</tbody></table></div>';
+            }
             
             html2 += '</div>';
             analysisSection2.innerHTML = html2;
@@ -1702,6 +1694,7 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             showAnalysisResultsModal(yearMonth);
             
             // 1. 產生數據 (同步)
+            // MODIFICATION: 接收 unitSummary
             const data = generateAnalysisData(yearMonth);
             
             if (!data) {
@@ -1715,7 +1708,8 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             }
 
             // 2. 渲染同步數據 (Req 1 & 2)
-            renderAnalysisResults(data.analysis, data.unitDetails);
+            // MODIFICATION: 傳遞 unitSummary
+            renderAnalysisResults(data.analysis, data.unitSummary);
             
             // 顯示內容，隱藏主載入
             analysisLoading.style.display = 'none';
@@ -1800,7 +1794,7 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             });
         }
 
-        // *** MODIFICATION: 報表下載 Modal 顯示/隱藏與邏輯切換 ***
+        // MODIFICATION: 報表下載 Modal 顯示/隱藏與邏輯切換
         function showReportDownloadModal() {
             console.log("顯示報表下載 Modal");
             const today = new Date();
@@ -2147,7 +2141,7 @@ ${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             if (cancelResetBtn) cancelResetBtn.addEventListener('click', hideResetModal);
             if (confirmResetBtn) confirmResetBtn.addEventListener('click', resetCurrentDateCounts);
             
-            // *** MODIFICATION: 報表下載事件綁定 ***
+            // MODIFICATION: 報表下載事件綁定
             if (exportReportModalBtn) exportReportModalBtn.addEventListener('click', showReportDownloadModal);
             if (cancelReportDownloadBtn) cancelReportDownloadBtn.addEventListener('click', hideReportDownloadModal);
             if (confirmReportDownloadBtn) confirmReportDownloadBtn.addEventListener('click', handleReportDownload);
