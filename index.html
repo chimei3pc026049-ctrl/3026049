@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>院內郵件計數系統</title>
+    <title>院內郵件統計系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    
     <style>
         /* 基礎字體與背景 */
         body {
@@ -15,8 +12,20 @@
             background-color: #f8fafc; /* Tailwind gray-50 */
         }
 
-        /* ... (其他 CSS 樣式不變) ... */
-        
+        /* 班次分頁按鈕樣式 */
+        .shift-tab {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 4px solid transparent;
+        }
+        .shift-tab.active {
+            font-weight: 600;
+            color: #4f46e5; /* Tailwind indigo-600 */
+            border-bottom-color: #4f46e5;
+        }
+        .shift-tab:not(.active):hover {
+            background-color: #eef2ff; /* Tailwind indigo-50 */
+        }
+
         /* 單位按鈕樣式 */
         .dept-btn {
             position: relative;
@@ -27,72 +36,241 @@
             -ms-user-select: none; /* IE 10+ */
             user-select: none; /* Standard */
         }
-        
-        /* ... (其他 CSS 樣式不變) ... */
-        
-        /* *** 新增分析 Modal 的分頁樣式 *** */
-        .analysis-tab {
-            padding: 0.75rem 1.25rem;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #4b5563; /* text-gray-600 */
-            background-color: #f3f4f6; /* bg-gray-100 */
-            border-radius: 0.375rem; /* rounded-md */
-            transition: all 0.2s ease-in-out;
-            cursor: pointer;
+        .dept-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
         }
-        .analysis-tab:hover {
-            background-color: #e5e7eb; /* bg-gray-200 */
-        }
-        .analysis-tab.active {
-            background-color: #4f46e5; /* bg-indigo-600 */
-            color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        /* 點擊的互動感 */
+        .dept-btn:active {
+            transform: scale(0.98);
+            background-color: #e0e7ff; /* Tailwind indigo-100 */
         }
 
-        /* *** 確保圖表容器有高度 *** */
-        .chart-container {
-            min-height: 400px;
-            width: 100%;
+        /* 數字徽章 */
+        .count-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: #4f46e5;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            width: 28px;
+            height: 28px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            transform: scale(0);
+            opacity: 0;
+        }
+        .count-badge.visible {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* 拖曳時的樣式 */
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #c7d2fe;
+            border-style: dashed;
+        }
+        .sortable-chosen {
+            cursor: grabbing;
+        }
+
+        /* 編輯模式下的閃爍提示 */
+        .editing-layout .dept-btn {
+            cursor: grab;
+            animation: pulse-border 1.5s infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+            50% { box-shadow: 0 0 0 4px rgba(79, 70, 229, 0); }
+        }
+
+        /* 控制列固定在底部 */
+        .control-bar {
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* 載入指示器樣式 */
+        #loading-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            font-size: 1.125rem; /* text-lg */
+            color: #4b5563; /* gray-600 */
+        }
+         /* 錯誤訊息樣式 */
+        #error-message {
+            display: none; /* 預設隱藏 */
+            padding: 1rem;
+            margin: 1rem auto;
+            max-width: 600px;
+            background-color: #fee2e2; /* red-100 */
+            color: #dc2626; /* red-600 */
+            border: 1px solid #fca5a5; /* red-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            text-align: center;
         }
         
-        /* AI 分析結果的樣式 */
+        /* *** 新增：操作說明頁面的樣式 *** */
+        #instructions-page .instructions-content {
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 2rem 3rem; /* p-8 md:p-12 */
+        }
+        #instructions-page h1 {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+            color: #111827; /* text-gray-900 */
+            margin-bottom: 1.5rem; /* mb-6 */
+            border-bottom: 1px solid #e5e7eb; /* border-b */
+            padding-bottom: 0.75rem; /* pb-3 */
+        }
+         #instructions-page h2 {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 600; /* font-semibold */
+            color: #4338ca; /* text-indigo-700 */
+            margin-top: 1.5rem; /* mt-6 */
+            margin-bottom: 0.75rem; /* mb-3 */
+        }
+        #instructions-page p, #instructions-page li {
+            font-size: 1rem; /* text-base */
+            color: #374151; /* text-gray-700 */
+            line-height: 1.75; /* leading-relaxed */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        #instructions-page ol {
+            list-style-type: decimal;
+            list-style-position: inside;
+            margin-top: 1rem; /* mt-4 */
+        }
+         #instructions-page ul {
+            list-style-type: disc;
+            list-style-position: inside;
+            margin-top: 1rem; /* mt-4 */
+        }
+        #instructions-page li {
+             margin-bottom: 0.5rem; /* space-y-2 */
+        }
+        #instructions-page strong {
+            font-weight: 700; /* font-bold */
+            color: #1f2937; /* text-gray-800 */
+        }
+        #instructions-page code {
+            background-color: #e5e7eb; /* bg-gray-200 */
+            color: #be123c; /* text-red-700 */
+            padding: 0.125rem 0.375rem; /* px-1 */
+            border-radius: 0.25rem; /* rounded */
+            font-family: monospace;
+        }
+        
+        /* *** 新增：AI 分析結果的樣式 *** */
         #ai-suggestion-content ul {
             list-style-type: disc;
             list-style-position: outside;
-            padding-left: 1.5rem;
+            padding-left: 1.5rem; /* 增加縮排 */
             margin-top: 0.5rem;
             margin-bottom: 1rem;
         }
          #ai-suggestion-content li {
-             margin-bottom: 0.5rem;
-             color: #374151;
+             margin-bottom: 0.5rem; /* 增加列表項間距 */
+             color: #374151; /* text-gray-700 */
              line-height: 1.6;
          }
         #ai-suggestion-content p {
             margin-bottom: 1rem;
-            color: #374151;
+            color: #374151; /* text-gray-700 */
             line-height: 1.6;
         }
          #ai-suggestion-content strong {
-            font-weight: 600;
-            color: #1f2937;
+            font-weight: 600; /* font-semibold */
+            color: #1f2937; /* text-gray-800 */
          }
     </style>
 </head>
 <body>
 
     <header class="bg-white shadow-sm sticky top-0 z-20">
-        </header>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-indigo-600">佳里院區/院內郵件統計系統</h1>
+            <div class="flex items-center space-x-4">
+                <button id="show-instructions-btn" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors flex items-center">
+                    <i data-lucide="help-circle" class="mr-1 h-4 w-4"></i>
+                    操作說明
+                </button>
+                <div class="flex items-center space-x-2 border-l pl-4">
+                    <span class="text-gray-600 font-medium">日期:</span>
+                    <input type="date" id="current-date" class="border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+            </div>
+        </div>
+    </header>
 
     <div id="counter-page">
+        <nav class="bg-white sticky top-[80px] z-10 shadow-sm">
+            <div id="shift-tabs-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto whitespace-nowrap -mb-px">
+                </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div id="loading-indicator">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                正在載入資料...
+            </div>
+            <div id="error-message"></div>
+            <div id="department-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3 pb-24 hidden"> </div>
+        </main>
+
         <footer class="control-bar fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200">
             <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="archive" class="text-indigo-600"></i>
+                        <span class="font-medium">本班次總計:</span>
+                        <span id="shift-total" class="font-bold text-lg text-indigo-600">0</span>
                     </div>
+                    <div class="flex items-center space-x-2 border-l pl-4">
+                        <i data-lucide="package" class="text-gray-700"></i>
+                        <span class="font-medium">本日總計:</span>
+                        <span id="day-total" class="font-bold text-lg text-gray-900">0</span>
+                    </div>
+                </div>
 
                 <div class="flex space-x-2 flex-wrap gap-2 justify-end">
-                    </div>
+                    <button id="save-data" class="bg-gray-400 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all" disabled>
+                        <i data-lucide="check" class="mr-2 h-5 w-5"></i>
+                        <span id="save-data-text">已儲存</span>
+                    </button>
+                    <button id="toggle-edit-layout" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
+                        <i data-lucide="move" class="mr-2 h-5 w-5"></i>
+                        <span id="edit-layout-text">編輯順序</span>
+                    </button>
+                    <button id="export-excel" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
+                        <i data-lucide="file-spreadsheet" class="mr-2 h-5 w-5"></i>
+                        匯出本日
+                    </button>
+                    <button id="export-report-modal-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
+                        <i data-lucide="file-text" class="mr-2 h-5 w-5"></i>
+                        報表下載
+                    </button>
+                    <button id="show-analysis-modal" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
+                        <i data-lucide="pie-chart" class="mr-2 h-5 w-5"></i>
+                        統計分析
+                    </button>
+                    <button id="reset-counts" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center transition-all">
+                        <i data-lucide="trash-2" class="mr-2 h-5 w-5"></i>
+                        清空本日
+                    </button>
+                </div>
             </div>
         </footer>
     </div>
@@ -104,39 +282,269 @@
             </button>
             
             <div class="instructions-content">
+                <h1>院內郵件計數系統 - 操作說明書</h1>
+                
+                <h2>1. 系統簡介</h2>
+                <p>歡迎使用「院內郵件計數系統」！</p>
+                <p>本系統旨在簡化院內各單位收送郵件的件數統計工作，取代傳統紙本記錄，提高效率與準確性。您可以透過此系統輕鬆記錄每日各班次的郵件數量，並能隨時匯出報表。</p>
+
+                <h2>2. 系統畫面概觀</h2>
+                <p>開啟系統後，您會看到一個清晰的操作介面，主要分為四大區塊：</p>
+                <ol>
+                    <li>**頂部區域**：
+                        <ul>
+                            <li>系統標題：「院內郵件計數系統」。</li>
+                            <li>**日期選擇器**：顯示目前操作的日期，可點擊更改。</li>
+                        </ul>
+                    </li>
+                    <li>**班次分頁**：
+                        <ul>
+                            <li>顯示所有郵件收送班次（如：<code>[送件] 08:15</code>、<code>[收件] 10:00</code> 等）。</li>
+                            <li>點擊可切換不同班次。當前選中的班次會有一條**藍色底線**標示。</li>
+                        </ul>
+                    </li>
+                    <li>**單位格點區**：
+                        <ul>
+                            <li>以按鈕形式顯示院內所有單位。這裡是您進行計數的主要操作區。</li>
+                        </ul>
+                    </li>
+                    <li>**底部控制列**：
+                        <ul>
+                            <li>**總計**：即時顯示「本班次總計」和「本日總計」的郵件數量。</li>
+                            <li>**功能按鈕**：包含儲存、編輯順序、匯出報表等所有進階操作。</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <h2>3. 基本操作：計數 (最常用功能)</h2>
+                <p>這是您每天都會用到的核心功能，操作非常直覺：</p>
+                <ol>
+                    <li>**選擇日期與班次**：
+                        <ul>
+                            <li>**步驟一**：確認頂部的日期是您要記錄的日期。如果不是，點擊日期欄位選擇正確日期。</li>
+                            <li>**步驟二**：點擊上方的班次分頁，選擇您正在處理的郵件班次（例如：<code>[送件] 08:15</code>）。</li>
+                        </ul>
+                    </li>
+                    <li>**計數**：
+                        <ul>
+                            <li>**步驟三**：在單位格點區中，找到對應的單位按鈕（例如：「企劃組」）。</li>
+                            <li>**增加數量 (滑鼠左鍵)**：**點擊滑鼠左鍵**，該單位的郵件數量會 **+1**。</li>
+                            <li>**減少數量 (滑鼠右鍵)**：**點擊滑鼠右鍵**，該單位的郵件數量會 **-1**（最少會減到 0，不會變負數）。</li>
+                            <li>**即時反饋**：每次點擊後，按鈕右上角的**藍色數字徽章**會即時更新數量。底部的「本班次總計」和「本日總計」也會同步更新。</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <h2>4. 儲存資料 (重要！)</h2>
+                <p>系統不會自動儲存您的每次點擊，請務必手動儲存。</p>
+                <ul>
+                    <li>**偵測變更**：當您進行任何計數或調整順序後，底部的「儲存」按鈕會變為**紫色**，顯示「**儲存變更**」。</li>
+                    <li>**手動儲存**：**請務必在完成記錄或關閉系統前，點擊此按鈕**，將變更儲存到雲端系統中。</li>
+                    <li>**儲存成功**：儲存成功後，按鈕會變回**灰色**，顯示「**已儲存**」，表示您的資料已安全儲存。</li>
+                    <li>**儲存失敗**：若儲存過程中斷或失敗，按鈕可能會顯示「儲存失敗」，請檢查網路連線並稍後再試。</li>
+                </ul>
+
+                <h2>5. 調整單位順序 (編輯模式)</h2>
+                <p>如果您希望單位按鈕的排列順序更符合您的操作習慣，可以自訂排序：</p>
+                <ol>
+                    <li>點擊底部控制列的黃色按鈕「**編輯順序**」。</li>
+                    <li>系統進入編輯模式：
+                        <ul>
+                            <li>該按鈕會變為藍色，顯示「**儲存順序**」。</li>
+                            <li>所有單位按鈕會出現**閃爍邊框**，表示它們現在可以被拖曳。</li>
+                        </ul>
+                    </li>
+                    <li>**按住** 想要移動的單位按鈕不放，**拖曳** 到您想要的位置後 **放開** 滑鼠。</li>
+                    <li>重複拖曳，直到所有單位都排列到您滿意的位置。</li>
+                    <li>完成後，再次點擊藍色的「**儲存順序**」按鈕，即可退出編輯模式。</li>
+                    <li>退出編輯模式後，佈局已更新，此時請記得點擊「**儲存變更**」按鈕，將這個新的順序儲存起來。</li>
+                </ol>
+                <p><em>* 注意：「新增單位...」按鈕固定在最後，無法被拖曳。</em></p>
+
+                <h2>6. 新增自訂單位</h2>
+                <p>如果系統預設單位不足（例如需要記錄特定廠商或臨時單位）：</p>
+                <ol>
+                    <li>找到單位格點區最後一個綠色虛線框的按鈕「**新增單位...**」並點擊。
+                        <p><em>* 注意：必須在非編輯模式下才能點擊。</em></p>
+                    </li>
+                    <li>系統會跳出一個「新增自訂單位」的視窗。</li>
+                    <li>請在「單位名稱」欄位輸入您要新增的單位名稱（例如：「廠商A」）。</li>
+                    <li>點擊「**新增**」按鈕。</li>
+                    <li>新的單位按鈕會立刻出現在「新增單位...」按鈕之前。</li>
+                    <li>新增後，別忘了點擊「**儲存變更**」按鈕儲存。</li>
+                </ol>
+
+                <h2>7. 匯出報表 (Excel)</h2>
+                <p>系統提供 Excel 報表匯出功能，方便您彙報或存檔：</p>
+                <ol>
+                    <li>**匯出本日**：
+                        <ul>
+                            <li>確認頂部日期為您想匯出的日期。</li>
+                            <li>點擊底部綠色的「**匯出本日**」按鈕。</li>
+                            <li>系統會立即下載一份 Excel 檔案 (<code>院內郵件計數_YYYY-MM-DD.xlsx</code>)，內容是該日所有班次、所有單位的計數明細，格式與紙本相同。</li>
+                        </ul>
+                    </li>
+                    <li>**報表下載 (月報表/年報表)**：
+                        <ul>
+                            <li>點擊底部藍色的「**報表下載**」按鈕。</li>
+                            <li>跳出視窗後，**選擇您要下載的「報表類型 (月報表或年報表)」**。</li>
+                            <li>根據選擇的類型，使用「**選擇月份/年份**」欄位選擇您想匯出的時間。</li>
+                            <li>點擊「**下載**」按鈕。</li>
+                            <li>系統會下載對應的 Excel 檔案。月報表包含**月份統計**和**每日明細**；年報表則包含**年度彙總統計**。</li>
+                        </ul>
+                    </li>
+                </ol>
+                
                 <h2>8. 產生統計分析 (新功能)</h2>
                 <p>除了匯出原始數據，系統還能自動產生該月份的統計圖表與 AI 分析建議：</p>
                 <ol>
                     <li>點擊底部綠色(<span class="inline-flex items-center"><i data-lucide="pie-chart" class="h-4 w-4 inline-block mx-1 text-teal-600"></i></span>)的「**統計分析**」按鈕。</li>
                     <li>在跳出的視窗中，使用「**選擇月份**」欄位選擇您想分析的月份。</li>
                     <li>點擊「**產生分析**」按鈕。</li>
-                    <li>系統會彈出一個新的「**月度統計分析報告**」視窗，此視窗包含兩個分頁：
+                    <li>系統會彈出一個新的「**月度統計分析報告**」視窗，內容包含：
                         <ul>
-                            <li>**數據報表 (分頁 1)**：
-                                <ul>
-                                    <li>院區收送總覽：顯示該月永康和柳營院區的「總送件」、「總收件」統計。</li>
-                                    <li>單位明細：以**分院區彙總表格**顯示各單位在該月的總送件與總收件數。</li>
-                                    <li>AI 建議：系統自動提供的流程優化建議。</li>
-                                </ul>
-                            </li>
-                            <li>**視覺化圖表 (分頁 2)**：
-                                <ul>
-                                    <li>**年度趨勢圖**：顯示該年度（1月至12月）各院區收送件的曲線圖。</li>
-                                    <li>**院區佔比圖**：顯示該月份永康與柳營的總件數環圈圖。</li>
-                                    <li>**TOP 10 單位圖**：顯示該月份郵件量前 10 名的單位橫條圖。</li>
-                                </ul>
-                            </li>
+                            <li>**院區收送總覽**：顯示永康和柳營院區的「總送件」、「總收件」以及各班次的件數統計。</li>
+                            <li>**單位明細**：以**分院區彙總表格**顯示各單位在該月的總送件與總收件數，並按件數降序排列。</li>
+                            <li>**AI 建議**：系統會自動將當月數據傳送給 AI 進行分析，並提供關於流程優化、件數平衡等方面的具體建議。（此過程可能需要幾秒鐘）</li>
                         </ul>
                     </li>
                 </ol>
 
                 <h2>9. 清空本日資料 (請謹慎使用)</h2>
+                <p>如果您需要清除某一天的所有計數資料（例如日期選錯，完全誤操作）：</p>
+                <ol>
+                    <li>確認頂部日期為您想清空的日期。</li>
+                    <li>點擊底部紅色的「**清空本日**」按鈕。</li>
+                    <li>系統會跳出一個**紅色**的確認視窗，再次詢問您是否確定要清空該日期的所有資料。</li>
+                    <li>確認無誤後，點擊「**確定清空**」按鈕。
+                        <p><em>* 注意：此操作無法復原，請謹慎使用！</em></p>
+                    </li>
+                    <li>清空後，該日的計數會全部歸零，系統會自動儲存此變更。</li>
+                </ol>
+
                 <h2>10. 系統載入與異常排除</h2>
-                </div>
+                <ul>
+                    <li>**正常載入**：開啟系統時，可能會短暫顯示「**正在載入資料...**」的旋轉圖示，這是正常現象，請稍候片刻。</li>
+                    <li>**卡住或空白**：若長時間卡在載入畫面（超過10秒），或畫面顯示錯誤訊息（例如「無法登入 Firebase」）：
+                        <ol>
+                            <li>請先嘗試 **重新整理(F5)** 頁面。</li>
+                            <li>若重新整理無效，請檢查您的網路連線是否正常。</li>
+                            <li>若問題持續存在，請聯繫資訊室或系統管理人員尋求協助。</li>
+                        </ol>
+                    </li>
+                </ul>
+                <p>希望這份說明能幫助您順利使用本系統！</p>
+            </div>
         </div>
     </div>
+    <div id="add-dept-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+            <div class="flex items-center">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <i data-lucide="plus" class="h-6 w-6 text-green-600"></i>
+                </div>
+                <h3 class="ml-3 text-lg leading-6 font-medium text-gray-900">
+                    新增自訂單位
+                </h3>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">
+                請輸入要新增的單位名稱 (例如：廠商A)。
+            </p>
+            <div class="mt-4">
+                <label for="new-dept-name" class="block text-sm font-medium text-gray-700">單位名稱</label>
+                <input type="text" id="new-dept-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <p id="add-dept-error" class="text-red-600 text-sm mt-1 hidden"></p>
+            </div>
+            <div class="mt-4 flex justify-end space-x-3">
+                <button id="cancel-add-dept" type="button" class="bg-white hover:bg-gray-50 border border-gray-300 rounded-md shadow-sm py-2 px-4 text-sm font-medium text-gray-700">
+                    取消
+                </button>
+                <button id="confirm-add-dept" type="button" class="bg-green-600 hover:bg-green-700 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white">
+                    新增
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="report-download-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+            <div class="flex items-center">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <i data-lucide="file-text" class="h-6 w-6 text-blue-600"></i>
+                </div>
+                <h3 class="ml-3 text-lg leading-6 font-medium text-gray-900">
+                    報表下載
+                </h3>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">
+                請選擇您要匯出的報表類型與時間範圍。
+            </p>
+            
+            <div class="mt-4 space-y-4">
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">選擇報表類型</label>
+                    <div class="flex items-center space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="report-type" id="report-type-month" value="month" class="form-radio text-blue-600 h-4 w-4" checked>
+                            <span class="ml-2 text-gray-700">月報表</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="report-type" id="report-type-year" value="year" class="form-radio text-blue-600 h-4 w-4">
+                            <span class="ml-2 text-gray-700">年報表</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="report-period-input" id="report-period-label" class="block text-sm font-medium text-gray-700">選擇月份</label>
+                    <input type="month" id="report-period-input" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <p id="report-download-error" class="text-red-600 text-sm mt-1 hidden"></p>
+                </div>
+            </div>
+
+            <div class="mt-4 flex justify-end space-x-3">
+                <button id="cancel-report-download" type="button" class="bg-white hover:bg-gray-50 border border-gray-300 rounded-md shadow-sm py-2 px-4 text-sm font-medium text-gray-700">
+                    取消
+                </button>
+                <button id="confirm-report-download" type="button" class="bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white">
+                    下載
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="analysis-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+            <div class="flex items-center">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-teal-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <i data-lucide="pie-chart" class="h-6 w-6 text-teal-600"></i>
+                </div>
+                <h3 class="ml-3 text-lg leading-6 font-medium text-gray-900">
+                    產生統計分析報告
+                </h3>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">
+                請選擇您要分析的月份。系統將產生一份包含院區總覽、單位明細與 AI 建議的報告。
+            </p>
+            <div class="mt-4">
+                <label for="analysis-month-input" class="block text-sm font-medium text-gray-700">選擇月份</label>
+                <input type="month" id="analysis-month-input" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <p id="analysis-modal-error" class="text-red-600 text-sm mt-1 hidden"></p>
+            </div>
+            <div class="mt-4 flex justify-end space-x-3">
+                <button id="cancel-analysis-modal" type="button" class="bg-white hover:bg-gray-50 border border-gray-300 rounded-md shadow-sm py-2 px-4 text-sm font-medium text-gray-700">
+                    取消
+                </button>
+                <button id="confirm-generate-analysis" type="button" class="bg-teal-600 hover:bg-teal-700 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white">
+                    產生分析
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <div id="analysis-results-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden p-4">
-        <div class="bg-white rounded-lg shadow-xl p-6 max-w-6xl w-full max-h-[90vh] flex flex-col"> <div class="flex items-center justify-between pb-3 border-b">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b">
                 <div class="flex items-center">
                     <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-teal-100 sm:mx-0 sm:h-10 sm:w-10">
                         <i data-lucide="pie-chart" class="h-6 w-6 text-teal-600"></i>
@@ -156,61 +564,21 @@
             </div>
 
             <div id="analysis-content" class="mt-4 overflow-y-auto hidden space-y-6">
-                
-                <div class="flex items-center space-x-2 border-b-2 pb-2">
-                    <button id="tab-btn-report" class="analysis-tab active">
-                        <i data-lucide="file-text" class="inline-block h-4 w-4 mr-1"></i>
-                        數據報表
-                    </button>
-                    <button id="tab-btn-chart" class="analysis-tab">
-                        <i data-lucide="bar-chart-3" class="inline-block h-4 w-4 mr-1"></i>
-                        視覺化圖表
-                    </button>
+                <div id="analysis-section-1">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-3">1. 院區收送總覽</h4>
+                    </div>
+                <div id="analysis-section-2">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-3">2. 單位總收送件數彙總</h4>
+                    </div>
+                <div id="analysis-section-3">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-3">3. AI 建議</h4>
+                    <div id="ai-suggestion-loading" class="flex items-center text-gray-500">
+                        <i data-lucide="loader-2" class="h-5 w-5 mr-2 animate-spin"></i>
+                        AI 正在分析數據並產生建議...
+                    </div>
+                    <div id="ai-suggestion-content" class="text-gray-700 max-w-none">
+                        </div>
                 </div>
-                
-                <div id="data-report-content">
-                    <div id="analysis-section-1">
-                        <h4 class="text-xl font-semibold text-gray-800 mb-3">1. 院區收送總覽 (本月)</h4>
-                        </div>
-                    <div id="analysis-section-2" class="mt-6">
-                        <h4 class="text-xl font-semibold text-gray-800 mb-3">2. 單位總收送件數彙總 (本月)</h4>
-                        </div>
-                    <div id="analysis-section-3" class="mt-6">
-                        <h4 class="text-xl font-semibold text-gray-800 mb-3">3. AI 建議 (基於本月)</h4>
-                        <div id="ai-suggestion-loading" class="flex items-center text-gray-500">
-                            <i data-lucide="loader-2" class="h-5 w-5 mr-2 animate-spin"></i>
-                            AI 正在分析數據並產生建議...
-                        </div>
-                        <div id="ai-suggestion-content" class="text-gray-700 max-w-none">
-                            </div>
-                    </div>
-                </div>
-
-                <div id="chart-visualization-content" class="hidden">
-                    
-                    <div class="mb-8 p-4 bg-white rounded-lg shadow">
-                        <h4 class="text-xl font-semibold text-gray-800 mb-4">年度院區收送件趨勢 (全年度)</h4>
-                        <div id="chart-monthly-trend" class="chart-container"></div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                        <div class="p-4 bg-white rounded-lg shadow">
-                            <h4 class="text-xl font-semibold text-gray-800 mb-4">院區總量佔比 (本月)</h4>
-                            <div id="chart-campus-donut" class="chart-container flex items-center justify-center"></div>
-                        </div>
-                        <div class="p-4 bg-white rounded-lg shadow">
-                            <h4 class="text-xl font-semibold text-gray-800 mb-4">Top 10 單位郵件量 (本月)</h4>
-                            <div id="chart-top-units" class="chart-container"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-8 p-4 bg-white rounded-lg shadow">
-                        <h4 class="text-xl font-semibold text-gray-800 mb-4">總送件 vs 總收件 (本月)</h4>
-                        <div id="chart-send-receive" class="chart-container flex items-center justify-center"></div>
-                    </div>
-
-                </div>
-
             </div>
 
             <div class="mt-6 pt-4 border-t flex justify-end">
@@ -221,6 +589,30 @@
         </div>
     </div>
 
+
+    <div id="reset-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+            <div class="flex items-center">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <i data-lucide="alert-triangle" class="h-6 w-6 text-red-600"></i>
+                </div>
+                <h3 class="ml-3 text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                    清空本日所有計數？
+                </h3>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">
+                此動作將會清除 <strong id="reset-date-display"></strong> 的所有資料，且無法復原。您確定嗎？
+            </p>
+            <div class="mt-4 flex justify-end space-x-3">
+                <button id="cancel-reset" type="button" class="bg-white hover:bg-gray-50 border border-gray-300 rounded-md shadow-sm py-2 px-4 text-sm font-medium text-gray-700">
+                    取消
+                </button>
+                <button id="confirm-reset" type="button" class="bg-red-600 hover:bg-red-700 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white">
+                    確定清空
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
@@ -243,21 +635,22 @@
             onSnapshot,
             setLogLevel
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // NOTE: getAnalytics is not imported via CDN as it requires an additional script/import structure.
 
-        // --- 0. Firebase 設定與初始化 ---
+        // --- 0. Firebase 設定與初始化 (*** 核心修改 ***) ---
         console.log("腳本開始執行...");
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        console.log("App ID:", appId);
+        console.log("App ID (來自平台):", appId);
         const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
         let firebaseConfig = null;
 
-        // 您提供的 Firebase 配置
+        // 您提供的 Firebase 配置 (作為主要配置)
         const USER_PROVIDED_FIREBASE_CONFIG = {
             apiKey: "AIzaSyDSG0XE2D1Kdptlxl9oD7QPom3fupB6OHQ",
             authDomain: "base-9b8b4.firebaseapp.com",
             projectId: "base-9b8b4",
-            storageBucket: "base-9b8b4.firebasestorage.app",
+            storageBucket: "base-9b8b4.firebasestorage.app", // 確保 .app 結尾
             messagingSenderId: "865059635319",
             appId: "1:865059635319:web:20cd2aee4ea7d9f5288672",
             measurementId: "G-YSW55LRG47"
@@ -274,13 +667,13 @@
                     console.log("Firebase 設定載入成功 (使用平台注入配置)");
                 }
             } catch (e) {
-                console.warn("解析平台配置失敗，將使用使用者提供配置。", e);
+                console.warn("解析平台配置失敗，將使用您提供的配置。", e);
             }
         } 
         
         // 2. 如果平台配置無效或不存在，使用使用者提供的配置
         if (!firebaseConfig) {
-             console.log("使用使用者提供的配置。");
+             console.log("使用您提供的配置。");
              firebaseConfig = USER_PROVIDED_FIREBASE_CONFIG;
         }
 
@@ -311,20 +704,20 @@
         }
 
         let dbRef = null;
-        let userId = null;
+        let userId = null; // 仍然保留，用於日誌記錄
         let unsubscribeSnapshot = null;
         let isDataLoaded = false;
         let isDataDirty = false;
 
         // --- 1. 系統常數 ---
         const SHIFTS = [
-            { id: 'S1', type: '送件', time: '08:15', route: '佳里→永康', campus: '永康' }, // ADDED campus field
-            { id: 'S2', type: '送件', time: '12:15', route: '佳里→永康', campus: '永康' }, // ADDED campus field
-            { id: 'S3', type: '送件', time: '13:00', route: '佳里→柳營', campus: '柳營' }, // ADDED campus field
-            { id: 'S4', type: '送件', time: '15:15', route: '佳里→永康', campus: '永康' }, // ADDED campus field
-            { id: 'R1', type: '收件', time: '10:00', route: '永康→佳里', campus: '永康' }, // ADDED campus field
-            { id: 'R2', type: '收件', time: '13:00', route: '柳營→佳里', campus: '柳營' }, // ADDED campus field
-            { id: 'R3', type: '收件', time: '14:00', route: '永康→佳里', campus: '永康' }, // ADDED campus field
+            { id: 'S1', type: '送件', time: '08:15', route: '佳里→永康', campus: '永康' },
+            { id: 'S2', type: '送件', time: '12:15', route: '佳里→永康', campus: '永康' },
+            { id: 'S3', type: '送件', time: '13:00', route: '佳里→柳營', campus: '柳營' },
+            { id: 'S4', type: '送件', time: '15:15', route: '佳里→永康', campus: '永康' },
+            { id: 'R1', type: '收件', time: '10:00', route: '永康→佳里', campus: '永康' },
+            { id: 'R2', type: '收件', time: '13:00', route: '柳營→佳里', campus: '柳營' },
+            { id: 'R3', type: '收件', time: '14:00', route: '永康→佳里', campus: '永康' },
         ];
         
         const DEFAULT_DEPARTMENTS = [
@@ -362,35 +755,72 @@
         };
 
         let sortableInstance = null;
-        
-        // 全局圖表實例
-        let chartMonthlyTrend = null;
-        let chartCampusDonut = null;
-        let chartTopUnits = null;
-        let chartSendReceive = null;
 
-        // *** MODIFICATION: 將所有 DOM 變數宣告移到這裡，設為 let ***
-        let shiftTabsContainer, departmentGrid, dateInput, shiftTotalEl, dayTotalEl,
-            toggleEditBtn, editLayoutText, exportBtn, resetBtn, resetModal,
-            cancelResetBtn, confirmResetBtn, resetDateDisplay,
-            exportReportModalBtn, reportDownloadModal, cancelReportDownloadBtn,
-            confirmReportDownloadBtn, reportPeriodInput, reportPeriodLabel,
-            reportDownloadError, reportTypeMonth, reportTypeYear,
-            addDeptModal, cancelAddDeptBtn, confirmAddDeptBtn, newDeptNameInput,
-            addDeptError, saveDataBtn, saveDataText, loadingIndicator, errorMessageDiv,
-            showInstructionsBtn, instructionsPage, counterPage, backToCounterBtn,
-            showAnalysisModalBtn, analysisModal, cancelAnalysisModalBtn,
-            confirmGenerateAnalysisBtn, analysisMonthInput, analysisModalError,
-            analysisResultsModal, closeAnalysisResultsBtn, closeAnalysisResultsBottomBtn,
-            analysisLoading, analysisContent, analysisResultsTitle,
-            tabBtnReport, tabBtnChart, dataReportContent, chartVisualizationContent,
-            analysisSection1, analysisSection2, analysisSection3,
-            aiSuggestionLoading, aiSuggestionContent,
-            chartMonthlyTrendDiv, chartCampusDonutDiv, chartTopUnitsDiv, chartSendReceiveDiv;
+        // --- 3. DOM 節點 ---
+        const shiftTabsContainer = document.getElementById('shift-tabs-container');
+        const departmentGrid = document.getElementById('department-grid');
+        const dateInput = document.getElementById('current-date');
+        const shiftTotalEl = document.getElementById('shift-total');
+        const dayTotalEl = document.getElementById('day-total');
+        const toggleEditBtn = document.getElementById('toggle-edit-layout');
+        const editLayoutText = document.getElementById('edit-layout-text');
+        const exportBtn = document.getElementById('export-excel');
+        const resetBtn = document.getElementById('reset-counts');
+        const resetModal = document.getElementById('reset-modal');
+        const cancelResetBtn = document.getElementById('cancel-reset');
+        const confirmResetBtn = document.getElementById('confirm-reset');
+        const resetDateDisplay = document.getElementById('reset-date-display');
+        
+        // MODIFICATION: 報表下載相關 DOM 節點變更
+        const exportReportModalBtn = document.getElementById('export-report-modal-btn'); 
+        const reportDownloadModal = document.getElementById('report-download-modal'); 
+        const cancelReportDownloadBtn = document.getElementById('cancel-report-download'); 
+        const confirmReportDownloadBtn = document.getElementById('confirm-report-download'); 
+        const reportPeriodInput = document.getElementById('report-period-input'); 
+        const reportPeriodLabel = document.getElementById('report-period-label'); 
+        const reportDownloadError = document.getElementById('report-download-error'); 
+        const reportTypeMonth = document.getElementById('report-type-month'); 
+        const reportTypeYear = document.getElementById('report-type-year'); 
+        
+        const addDeptModal = document.getElementById('add-dept-modal');
+        const cancelAddDeptBtn = document.getElementById('cancel-add-dept');
+        const confirmAddDeptBtn = document.getElementById('confirm-add-dept');
+        const newDeptNameInput = document.getElementById('new-dept-name');
+        const addDeptError = document.getElementById('add-dept-error');
+        const saveDataBtn = document.getElementById('save-data');
+        const saveDataText = document.getElementById('save-data-text');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessageDiv = document.getElementById('error-message');
+        
+        // 頁面導覽 DOM
+        const showInstructionsBtn = document.getElementById('show-instructions-btn');
+        const instructionsPage = document.getElementById('instructions-page');
+        const counterPage = document.getElementById('counter-page');
+        const backToCounterBtn = document.getElementById('back-to-counter-btn');
+        
+        // 分析 Modal DOM
+        const showAnalysisModalBtn = document.getElementById('show-analysis-modal');
+        const analysisModal = document.getElementById('analysis-modal');
+        const cancelAnalysisModalBtn = document.getElementById('cancel-analysis-modal');
+        const confirmGenerateAnalysisBtn = document.getElementById('confirm-generate-analysis');
+        const analysisMonthInput = document.getElementById('analysis-month-input');
+        const analysisModalError = document.getElementById('analysis-modal-error');
+        
+        const analysisResultsModal = document.getElementById('analysis-results-modal');
+        const closeAnalysisResultsBtn = document.getElementById('close-analysis-results');
+        const closeAnalysisResultsBottomBtn = document.getElementById('close-analysis-results-bottom');
+        const analysisLoading = document.getElementById('analysis-loading');
+        const analysisContent = document.getElementById('analysis-content');
+        const analysisResultsTitle = document.getElementById('analysis-results-title');
+        const analysisSection1 = document.getElementById('analysis-section-1');
+        const analysisSection2 = document.getElementById('analysis-section-2');
+        const analysisSection3 = document.getElementById('analysis-section-3');
+        const aiSuggestionLoading = document.getElementById('ai-suggestion-loading');
+        const aiSuggestionContent = document.getElementById('ai-suggestion-content');
 
 
         // --- 4. 資料處理函式 (Firebase Firestore) ---
-        // ... (saveDataToFirestore, updateSaveButtonState, getFormattedDate, getCountsForDate, getCount, setCount - 內容不變) ...
+
         async function saveDataToFirestore() {
             console.log("saveDataToFirestore 函數被呼叫");
             if (!dbRef || !isDataLoaded) {
@@ -475,9 +905,8 @@
             isDataDirty = true;
             updateSaveButtonState();
         }
-
+        
         // --- 5. 頁面導覽函式 ---
-        // ... (navigateTo 內容不變) ...
         function navigateTo(pageName) {
             state.currentPage = pageName;
             console.log(`導覽至: ${pageName}`);
@@ -500,7 +929,7 @@
         }
 
         // --- 6. 渲染函式 (Render) ---
-        // ... (renderShiftTabs, renderDepartmentGrid, updateButtonCount, updateTotals - 內容不變) ...
+
         function renderShiftTabs() {
             if (!shiftTabsContainer) {
                 console.error("找不到 shift-tabs-container 元素！");
@@ -645,7 +1074,6 @@
         }
 
         // --- 7. 拖曳排序功能 ---
-        // ... (initSortable, toggleEditMode - 內容不變) ...
         function initSortable() {
             console.log("初始化 Sortable...");
             if (!departmentGrid) {
@@ -716,7 +1144,6 @@
 
 
         // --- 8. Excel 匯出功能 ---
-        // ... (exportToExcel, exportSelectedReport - 內容不變) ...
         function exportToExcel() {
             console.log("匯出本日 Excel...");
             if (typeof XLSX === 'undefined') {
@@ -792,6 +1219,12 @@
             }
         }
         
+        // MODIFICATION: 統一的報表匯出邏輯 (處理月報表和年報表)
+        /**
+         * 匯出選定的報表 (月報表或年報表)
+         * @param {string} period - YYYY-MM (月報表) 或 YYYY (年報表)
+         * @param {string} type - 'month' 或 'year'
+         */
         function exportSelectedReport(period, type) {
             console.log(`匯出報表: ${type}, 期間: ${period}...`);
             if (typeof XLSX === 'undefined') {
@@ -982,7 +1415,7 @@
         // --- 9. AI 分析功能 (已修改) ---
         
         /**
-         * 呼叫 Gemini API (已修正 API Key 和模型)
+         * 呼叫 Gemini API
          * @param {string} prompt - 傳送給 AI 的提示詞
          * @param {number} retries - 重試次數
          * @param {number} delay - 初始重試延遲 (ms)
@@ -990,24 +1423,8 @@
          */
         async function callGeminiAPI(prompt, retries = 3, delay = 1000) {
             console.log("正在呼叫 Gemini API...");
-
-            // --- 
-            // *** MODIFICATION: 請在此處貼上您的 Google AI Studio API 金鑰 ***
-            // 1. 前往 https://aistudio.google.com/app/apikey
-            // 2. 建立並複製您的 API 金鑰
-            // 3. 將金鑰貼在引號之間 (例如: "AIzaSy...")
-            // ---
-            const apiKey = "在這裡貼上您剛才複製的_GOOGLE_AI_STUDIO_API_KEY"; // <--- ！！請務必替換此行！！
-            
-            // 檢查金鑰是否存在
-            if (apiKey === "在這裡貼上您剛才複製的_GOOGLE_AI_STUDIO_API_KEY" || apiKey === "") {
-                console.error("AI 分析失敗：未提供 Google AI Studio API 金鑰。");
-                return "AI 分析失敗：未設定 API 金鑰。請檢查 `callGeminiAPI` 函式中的 `apiKey` 變數。";
-            }
-
-            // MODIFICATION: 更新為更穩定的模型名稱
-            const modelName = "gemini-1.5-flash-latest"; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            const apiKey = ""; // Canvas 將自動注入
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
             const systemPrompt = "你是一位專業的物流與行政效率分析師。請根據以下的院內郵件月度數據，提供簡潔、條理分明(使用條列式)的分析與建議，旨在優化郵件收送流程或指出潛在問題。你的分析應著重於：\n1. 永康和柳營院區的收送件量是否平衡？\n2. 哪些班次的負擔特別重？\n3. 哪些單位的使用量特別高或低，是否有異常？\n4. 基於這些數據，提出 2-3 點具體的改善建議。\n語言：繁體中文。";
 
@@ -1035,11 +1452,7 @@
                     if (!response.ok) {
                         const errorBody = await response.json();
                         console.error(`Gemini API 錯誤 (HTTP ${response.status}):`, errorBody);
-                        // 顯示更詳細的 API 錯誤訊息
-                        if (errorBody.error && errorBody.error.message) {
-                             throw new Error(`API 請求失敗: ${errorBody.error.message}`);
-                        }
-                        throw new Error(`API 請求失敗，狀態碼: ${response.status}`);
+                        throw new Error(`API request failed with status ${response.status}`);
                     }
 
                     const result = await response.json();
@@ -1050,19 +1463,14 @@
                         console.log("Gemini API 分析成功。");
                         return candidate.content.parts[0].text;
                     } else {
-                        // 檢查是否有安全阻擋
-                        if (candidate && candidate.finishReason === 'SAFETY') {
-                             console.warn("AI 回應被安全設定阻擋:", candidate.safetyRatings);
-                             throw new Error("AI 回應因安全設定被阻擋。");
-                        }
                         console.warn("Gemini API 回應中未找到有效的文字內容:", result);
-                        throw new Error("無效的 API 回應結構。");
+                        throw new Error("Invalid API response structure.");
                     }
                 } catch (error) {
                     console.error(`呼叫 Gemini API 失敗 (嘗試 ${i + 1}/${retries}):`, error.message);
                     if (i === retries - 1) {
                         // 最後一次嘗試失敗
-                        return `AI 分析失敗：無法連接到分析服務或回應格式錯誤。請檢查網路連線或 API 金鑰設定。(${error.message})`;
+                        return "AI 分析失敗：無法連接到分析服務或回應格式錯誤。請稍後再試。";
                     }
                     // Exponential backoff
                     await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
@@ -1072,60 +1480,50 @@
         }
         
         /**
-         * *** MODIFICATION: 產生月度與年度分析數據 ***
+         * 產生月度分析所需的數據 (已修改，輸出 unitSummary，並區分院區)
          * @param {string} yearMonth - YYYY-MM 格式的月份
          * @returns {object | null} - 包含分析數據的物件，或在無資料時返回 null
          */
         function generateAnalysisData(yearMonth) {
             console.log(`正在為 ${yearMonth} 產生分析數據...`);
-            
-            const selectedYear = yearMonth.split('-')[0];
             const allDates = Object.keys(dataFromFirestore.counts);
-            
-            // 1. 抓取全年度的數據
-            const relevantYearDates = allDates.filter(date => date.startsWith(selectedYear));
-            if (relevantYearDates.length === 0) {
-                console.warn(`年份 ${selectedYear} 沒有資料。`);
+            const relevantDates = allDates.filter(date => date.startsWith(yearMonth));
+
+            if (relevantDates.length === 0) {
+                console.warn(`月份 ${yearMonth} 沒有資料。`);
                 return null;
             }
 
-            // 初始化年度趨勢數據 (12 個月份)
-            let monthlyTrendData = {
-                yongkangSend: Array(12).fill(0),
-                yongkangReceive: Array(12).fill(0),
-                liuyingSend: Array(12).fill(0),
-                liuyingReceive: Array(12).fill(0)
-            };
-
-            // 2. 抓取所選月份的數據
-            const relevantMonthDates = relevantYearDates.filter(date => date.startsWith(yearMonth));
-
-            // 初始化所選月份的數據
             let analysis = {
                 yongkang: { send: 0, receive: 0, shifts: {} },
                 liuying: { send: 0, receive: 0, shifts: {} }
             };
-            let unitSummaryByCampus = { '永康': {}, '柳營': {} };
-            
-            // 初始化班次計數器 (for selected month)
+
+            // MODIFICATION: 單位彙總數據，現在按院區分組
+            let unitSummaryByCampus = {
+                '永康': {},
+                '柳營': {}
+            }; 
+
+            // 初始化班次計數器
             SHIFTS.forEach(shift => {
-                if (shift.campus === '永康') {
+                if (shift.route.includes('永康')) {
                     analysis.yongkang.shifts[shift.id] = { name: `[${shift.type}] ${shift.time}`, count: 0 };
                 }
-                if (shift.campus === '柳營') {
+                if (shift.route.includes('柳營')) {
                     analysis.liuying.shifts[shift.id] = { name: `[${shift.type}] ${shift.time}`, count: 0 };
                 }
             });
 
-            // 3. 遍歷全年度數據，計算趨勢
-            relevantYearDates.forEach(date => {
+            // 遍歷所有相關日期的所有數據
+            relevantDates.forEach(date => {
                 const dateData = dataFromFirestore.counts[date];
                 if (!dateData) return;
-                const monthIndex = parseInt(date.split('-')[1], 10) - 1; // 0 = 1月, 11 = 12月
 
                 Object.keys(dateData).forEach(deptId => {
                     const dept = dataFromFirestore.departments.find(d => d.id === deptId);
                     if (!dept || dept.id === 'DYN_ADD') return;
+                    const deptName = dept.name;
                     
                     Object.keys(dateData[deptId]).forEach(shiftId => {
                         const count = dateData[deptId][shiftId] || 0;
@@ -1134,71 +1532,44 @@
                         const shift = SHIFTS.find(s => s.id === shiftId);
                         if (!shift) return;
                         
-                        const campus = shift.campus;
-                        if (!campus) return;
+                        const campus = shift.campus; // 透過班次判斷院區
+                        
+                        if (!unitSummaryByCampus[campus]) return; // 安全檢查
 
-                        // 填充年度趨勢數據
+                        if (!unitSummaryByCampus[campus][deptName]) {
+                            unitSummaryByCampus[campus][deptName] = { totalSend: 0, totalReceive: 0 };
+                        }
+                        
+                        // 總結單位收送件數 (新邏輯: 分院區)
+                        if (shift.type === '送件') {
+                            unitSummaryByCampus[campus][deptName].totalSend += count;
+                        } else if (shift.type === '收件') {
+                            unitSummaryByCampus[campus][deptName].totalReceive += count;
+                        }
+
+                        // 總結院區班次數據 (原邏輯)
                         if (campus === '永康') {
-                            if (shift.type === '送件') monthlyTrendData.yongkangSend[monthIndex] += count;
-                            else monthlyTrendData.yongkangReceive[monthIndex] += count;
+                            if (shift.type === '送件') {
+                                analysis.yongkang.send += count;
+                                analysis.yongkang.shifts[shift.id].count += count;
+                            } else { // 收件
+                                analysis.yongkang.receive += count;
+                                analysis.yongkang.shifts[shift.id].count += count;
+                            }
                         } else if (campus === '柳營') {
-                            if (shift.type === '送件') monthlyTrendData.liuyingSend[monthIndex] += count;
-                            else monthlyTrendData.liuyingReceive[monthIndex] += count;
+                            if (shift.type === '送件') {
+                                analysis.liuying.send += count;
+                                analysis.liuying.shifts[shift.id].count += count;
+                            } else { // 收件
+                                analysis.liuying.receive += count;
+                                analysis.liuying.shifts[shift.id].count += count;
+                            }
                         }
                     });
                 });
             });
-
-            // 4. 遍歷所選月份數據，計算當月總覽和單位彙總
-            if (relevantMonthDates.length > 0) {
-                relevantMonthDates.forEach(date => {
-                    const dateData = dataFromFirestore.counts[date];
-                    if (!dateData) return;
-
-                    Object.keys(dateData).forEach(deptId => {
-                        const dept = dataFromFirestore.departments.find(d => d.id === deptId);
-                        if (!dept || dept.id === 'DYN_ADD') return;
-                        const deptName = dept.name;
-                        
-                        Object.keys(dateData[deptId]).forEach(shiftId => {
-                            const count = dateData[deptId][shiftId] || 0;
-                            if (count === 0) return;
-
-                            const shift = SHIFTS.find(s => s.id === shiftId);
-                            if (!shift) return;
-                            
-                            const campus = shift.campus;
-                            if (!campus || !unitSummaryByCampus[campus]) return; // 安全檢查
-
-                            if (!unitSummaryByCampus[campus][deptName]) {
-                                unitSummaryByCampus[campus][deptName] = { totalSend: 0, totalReceive: 0 };
-                            }
-                            
-                            // 總結單位收送件數 (本月)
-                            if (shift.type === '送件') {
-                                unitSummaryByCampus[campus][deptName].totalSend += count;
-                            } else if (shift.type === '收件') {
-                                unitSummaryByCampus[campus][deptName].totalReceive += count;
-                            }
-
-                            // 總結院區班次數據 (本月)
-                            if (campus === '永康') {
-                                if (shift.type === '送件') analysis.yongkang.send += count;
-                                else analysis.yongkang.receive += count;
-                                if(analysis.yongkang.shifts[shift.id]) analysis.yongkang.shifts[shift.id].count += count;
-                            } else if (campus === '柳營') {
-                                if (shift.type === '送件') analysis.liuying.send += count;
-                                else analysis.liuying.receive += count;
-                                if(analysis.liuying.shifts[shift.id]) analysis.liuying.shifts[shift.id].count += count;
-                            }
-                        });
-                    });
-                });
-            } else {
-                 console.warn(`所選月份 ${yearMonth} 沒有資料，但該年度有資料。`);
-            }
             
-            // 5. 準備 AI Prompt 用的 Top 10 數據 (基於本月)
+            // 準備 AI Prompt 用的精簡數據 (將兩院區單位的總計件數合併計算 Top 10)
             let allUnitsTotal = [];
             for (const campus in unitSummaryByCampus) {
                 for (const unit in unitSummaryByCampus[campus]) {
@@ -1210,38 +1581,45 @@
                 }
             }
 
-            const topUnitsData = allUnitsTotal
-                .sort((a, b) => b.total - a.total)
-                .slice(0, 10)
-                .filter(d => d.total > 0); // 只顯示大於 0 的
+            const aiPromptData = {
+                month: yearMonth,
+                campusTotals: analysis,
+                topUnits: allUnitsTotal
+                    .sort((a, b) => b.total - a.total)
+                    .slice(0, 10)
+            };
             
             const aiPrompt = `
-月份: ${yearMonth}
+月份: ${aiPromptData.month}
 數據摘要:
 1. 院區總量:
-    - 永康院區: 送件 ${analysis.yongkang.send} 件, 收件 ${analysis.yongkang.receive} 件
-    - 柳營院區: 送件 ${analysis.liuying.send} 件, 收件 ${analysis.liuying.receive} 件
+    - 永康院區: 送件 ${aiPromptData.campusTotals.yongkang.send} 件, 收件 ${aiPromptData.campusTotals.yongkang.receive} 件
+    - 柳營院區: 送件 ${aiPromptData.campusTotals.liuying.send} 件, 收件 ${aiPromptData.campusTotals.liuying.receive} 件
+
 2. 永康院區-各班次件數:
 ${Object.values(analysis.yongkang.shifts).filter(s => s.count > 0).map(s => `    - ${s.name}: ${s.count} 件`).join('\n')}
+
 3. 柳營院區-各班次件數:
 ${Object.values(analysis.liuying.shifts).filter(s => s.count > 0).map(s => `    - ${s.name}: ${s.count} 件`).join('\n')}
+
 4. 本月郵件量前 10 名單位 (總送收件):
-${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
+${aiPromptData.topUnits.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
+
 請基於以上數據提供分析與建議。
 `;
 
-            console.log("分析數據產生完畢:", { analysis, unitSummaryByCampus, aiPrompt, monthlyTrendData, topUnitsData });
-            
-            return { analysis, unitSummaryByCampus, aiPrompt, monthlyTrendData, topUnitsData };
+            console.log("分析數據產生完畢:", { analysis, unitSummaryByCampus, aiPrompt });
+            // MODIFICATION: 回傳 unitSummaryByCampus
+            return { analysis, unitSummaryByCampus, aiPrompt };
         }
         
         /**
-         * *** MODIFICATION: 渲染「數據報表」分頁 ***
+         * 將分析數據渲染到 Modal 中 (已修改，渲染單位彙總表，並分院區)
          * @param {object} analysis - 院區總覽數據
          * @param {object} unitSummaryByCampus - 單位送件與收件總數彙總 (按院區分組)
          */
-        function renderAnalysisReportTab(analysis, unitSummaryByCampus) {
-            console.log("正在渲染「數據報表」分頁...");
+        function renderAnalysisResults(analysis, unitSummaryByCampus) {
+            console.log("正在渲染分析結果...");
             
             // --- 1. 渲染院區總覽 --- 
             let html1 = '<div class="grid grid-cols-1 md:grid-cols-2 gap-6">';
@@ -1253,6 +1631,7 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             html1 += `<p class="text-gray-700 mb-3"><strong>總收件:</strong> <span class="text-xl font-bold text-green-600">${analysis.yongkang.receive}</span> 件</p>`;
             html1 += '<h6 class="font-semibold text-gray-600 mb-2">各班次明細:</h6><ul class="list-disc list-inside space-y-1 text-sm">';
             Object.values(analysis.yongkang.shifts).forEach(shift => {
+                // 僅顯示有計數的班次
                 if (shift.count > 0) html1 += `<li>${shift.name}: <span class="font-medium">${shift.count}</span> 件</li>`;
             });
             html1 += '</ul></div>';
@@ -1264,13 +1643,14 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             html1 += `<p class="text-gray-700 mb-3"><strong>總收件:</strong> <span class="text-xl font-bold text-green-600">${analysis.liuying.receive}</span> 件</p>`;
             html1 += '<h6 class="font-semibold text-gray-600 mb-2">各班次明細:</h6><ul class="list-disc list-inside space-y-1 text-sm">';
             Object.values(analysis.liuying.shifts).forEach(shift => {
+                // 僅顯示有計數的班次
                 if (shift.count > 0) html1 += `<li>${shift.name}: <span class="font-medium">${shift.count}</span> 件</li>`;
             });
             html1 += '</ul></div>';
             html1 += '</div>';
             analysisSection1.innerHTML = html1;
 
-            // --- 2. 渲染單位總覽 (分院區彙總表) ---
+            // --- MODIFICATION: 渲染單位總覽 (分院區彙總表) ---
             let html2 = '<div class="space-y-6">';
             
             const renderUnitSummaryTable = (campus, unitSummary) => {
@@ -1285,6 +1665,7 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
                 let grandTotalReceive = 0;
                 let tableHtml = '';
 
+                // 移除不必要的表格，如果該院區沒有任何記錄
                 let hasData = depts.some(deptName => (unitSummary[deptName].totalSend + unitSummary[deptName].totalReceive) > 0);
 
                 if (!hasData) {
@@ -1293,7 +1674,7 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
                 }
                 
                 tableHtml += `<h5 class="text-lg font-semibold text-gray-700 mt-4 mb-2">${campus} 院區 - 單位總收送件數彙總</h5>`;
-                tableHtml += '<div class="overflow-x-auto">';
+                tableHtml += '<div class="overflow-x-auto">'; // 增加滾動條以防表格過寬
                 tableHtml += '<table class="min-w-full divide-y divide-gray-200 text-sm">';
                 tableHtml += '<thead class="bg-gray-100"><tr><th class="px-3 py-2 text-left font-medium text-gray-600">單位名稱</th>';
                 tableHtml += '<th class="px-3 py-2 text-right font-medium text-blue-600">總送件數</th>';
@@ -1306,6 +1687,7 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
                     const totals = unitSummary[deptName];
                     const total = totals.totalSend + totals.totalReceive;
                     
+                    // 只顯示總數 > 0 的單位
                     if (total === 0) return; 
 
                     grandTotalSend += totals.totalSend;
@@ -1327,176 +1709,16 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
                 return tableHtml;
             };
 
+            // 渲染永康院區
             html2 += renderUnitSummaryTable('永康', unitSummaryByCampus['永康']);
+            
+            // 渲染柳營院區
             html2 += renderUnitSummaryTable('柳營', unitSummaryByCampus['柳營']);
 
             html2 += '</div>';
             analysisSection2.innerHTML = html2;
             
-            console.log("「數據報表」分頁渲染完畢。");
-        }
-        
-        /**
-         * *** MODIFICATION: 渲染「視覺化圖表」分頁 ***
-         */
-        function renderAnalysisChartsTab(analysisData) {
-            console.log("正在渲染「視覺化圖表」分頁...");
-
-            try {
-                // --- 銷毀舊圖表 (防止記憶體洩漏) ---
-                if (chartMonthlyTrend) chartMonthlyTrend.destroy();
-                if (chartCampusDonut) chartCampusDonut.destroy();
-                if (chartTopUnits) chartTopUnits.destroy();
-                if (chartSendReceive) chartSendReceive.destroy();
-
-                const commonOptions = {
-                    chart: {
-                        fontFamily: 'Inter, sans-serif',
-                        toolbar: { show: true },
-                        animations: { enabled: true, easing: 'easeinout', speed: 800 }
-                    },
-                    colors: ['#4f46e5', '#10b981', '#f59e0b', '#3b82f6'], // Indigo, Green, Amber, Blue
-                    tooltip: {
-                        theme: 'light',
-                        style: { fontSize: '14px' }
-                    }
-                };
-
-                // --- 圖表 1: 年度趨勢 (曲線圖) ---
-                const trendOptions = {
-                    ...commonOptions,
-                    series: [
-                        { name: '永康-送件', data: analysisData.monthlyTrendData.yongkangSend },
-                        { name: '永康-收件', data: analysisData.monthlyTrendData.yongkangReceive },
-                        { name: '柳營-送件', data: analysisData.monthlyTrendData.liuyingSend },
-                        { name: '柳營-收件', data: analysisData.monthlyTrendData.liuyingReceive }
-                    ],
-                    chart: { ...commonOptions.chart, type: 'area', height: 400 },
-                    xaxis: {
-                        categories: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
-                        title: { text: '月份' }
-                    },
-                    yaxis: { title: { text: '件數' } },
-                    dataLabels: { enabled: false },
-                    stroke: { curve: 'smooth', width: 3 },
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            shadeIntensity: 1,
-                            opacityFrom: 0.7,
-                            opacityTo: 0.1,
-                            stops: [0, 90, 100]
-                        }
-                    },
-                    legend: { position: 'top', horizontalAlign: 'left' }
-                };
-                chartMonthlyTrend = new ApexCharts(chartMonthlyTrendDiv, trendOptions);
-                chartMonthlyTrend.render();
-
-                // --- 圖表 2: 院區總量佔比 (環圈圖) ---
-                const yongkangTotal = analysisData.analysis.yongkang.send + analysisData.analysis.yongkang.receive;
-                const liuyingTotal = analysisData.analysis.liuying.send + analysisData.analysis.liuying.receive;
-                const donutData = [yongkangTotal, liuyingTotal];
-                const donutLabels = ['永康院區', '柳營院區'];
-                
-                const donutOptions = {
-                    ...commonOptions,
-                    series: (yongkangTotal > 0 || liuyingTotal > 0) ? donutData : [],
-                    labels: donutLabels,
-                    chart: { ...commonOptions.chart, type: 'donut', height: 400 },
-                    colors: ['#4f46e5', '#f59e0b'], // 永康 (Indigo), 柳營 (Amber)
-                    plotOptions: {
-                        pie: {
-                            donut: {
-                                size: '65%',
-                                labels: {
-                                    show: true,
-                                    total: { show: true, label: '總件數', fontSize: '20px', fontWeight: 600 }
-                                }
-                            }
-                        }
-                    },
-                    legend: { show: true, position: 'bottom' },
-                    noData: { text: '本月無資料' }
-                };
-                chartCampusDonut = new ApexCharts(chartCampusDonutDiv, donutOptions);
-                chartCampusDonut.render();
-                
-                // --- 圖表 3: Top 10 單位 (橫條圖) ---
-                const topUnits = analysisData.topUnitsData;
-                const topUnitsOptions = {
-                    ...commonOptions,
-                    series: [{
-                        name: '總件數',
-                        data: topUnits.map(d => d.total)
-                    }],
-                    chart: { ...commonOptions.chart, type: 'bar', height: 400 },
-                    plotOptions: {
-                        bar: {
-                            horizontal: true,
-                            borderRadius: 4,
-                            barHeight: '60%',
-                            dataLabels: { position: 'top' }
-                        }
-                    },
-                    dataLabels: {
-                        enabled: true,
-                        offsetX: 25,
-                        style: { colors: ['#333'], fontSize: '12px' }
-                    },
-                    xaxis: {
-                        categories: topUnits.map(d => d.unit),
-                        title: { text: '總件數' }
-                    },
-                    yaxis: {
-                        labels: {
-                            style: { fontSize: '14px' }
-                        }
-                    },
-                    grid: { xaxis: { lines: { show: true } } },
-                    tooltip: { y: { formatter: (val) => `${val} 件` } },
-                    noData: { text: '本月無資料' }
-                };
-                chartTopUnits = new ApexCharts(chartTopUnitsDiv, topUnitsOptions);
-                chartTopUnits.render();
-                
-                // --- 圖表 4: 總送/收件比例 (儀表板) ---
-                const totalSend = analysisData.analysis.yongkang.send + analysisData.analysis.liuying.send;
-                const totalReceive = analysisData.analysis.yongkang.receive + analysisData.analysis.liuying.receive;
-                
-                const sendReceiveOptions = {
-                    ...commonOptions,
-                    series: (totalSend > 0 || totalReceive > 0) ? [totalSend, totalReceive] : [],
-                    labels: ['總送件', '總收件'],
-                    chart: { ...commonOptions.chart, type: 'radialBar', height: 400 },
-                    colors: ['#3b82f6', '#10b981'], // 送件 (Blue), 收件 (Green)
-                    plotOptions: {
-                        radialBar: {
-                            hollow: { size: '40%' },
-                            dataLabels: {
-                                name: { fontSize: '22px' },
-                                value: { fontSize: '16px' },
-                                total: {
-                                    show: true,
-                                    label: '總計',
-                                    formatter: function (w) {
-                                        return totalSend + totalReceive + ' 件';
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    legend: { show: true, position: 'bottom' },
-                    noData: { text: '本月無資料' }
-                };
-                chartSendReceive = new ApexCharts(chartSendReceiveDiv, sendReceiveOptions);
-                chartSendReceive.render();
-
-
-            } catch (error) {
-                console.error("渲染圖表時發生錯誤:", error);
-                chartVisualizationContent.innerHTML = `<p class="text-red-600">載入圖表時發生錯誤：${error.message}</p>`;
-            }
+            console.log("分析結果渲染完畢。");
         }
         
         /**
@@ -1516,29 +1738,28 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             showAnalysisResultsModal(yearMonth);
             
             // 1. 產生數據 (同步)
-            // *** MODIFICATION: 接收所有數據 ***
+            // MODIFICATION: 接收 unitSummaryByCampus
             const data = generateAnalysisData(yearMonth);
             
             if (!data) {
                 analysisLoading.style.display = 'none';
                 analysisContent.classList.remove('hidden');
                 const errorMsg = `<p class="text-red-600 p-4">在 ${yearMonth} 月份沒有找到任何郵件記錄。</p>`;
-                dataReportContent.innerHTML = errorMsg; // 顯示在第一個 tab
-                chartVisualizationContent.innerHTML = errorMsg; // 顯示在第二個 tab
+                analysisSection1.innerHTML = errorMsg;
+                analysisSection2.innerHTML = "";
+                analysisSection3.innerHTML = "";
                 return;
             }
 
-            // 2. 渲染「數據報表」分頁
-            renderAnalysisReportTab(data.analysis, data.unitSummaryByCampus);
-            
-            // 3. 渲染「視覺化圖表」分頁
-            renderAnalysisChartsTab(data);
+            // 2. 渲染同步數據 (Req 1 & 2)
+            // MODIFICATION: 傳遞 unitSummaryByCampus
+            renderAnalysisResults(data.analysis, data.unitSummaryByCampus);
             
             // 顯示內容，隱藏主載入
             analysisLoading.style.display = 'none';
             analysisContent.classList.remove('hidden');
             
-            // 4. 呼叫 AI (非同步)
+            // 3. 呼叫 AI (非同步)
             try {
                 const aiResult = await callGeminiAPI(data.aiPrompt);
                 
@@ -1588,7 +1809,6 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
 
 
         // --- 10. Modals 與重設功能 ---
-        // ... (showResetModal, hideResetModal, resetCurrentDateCounts - 內容不變) ...
         function showResetModal() {
             resetDateDisplay.textContent = state.currentDate;
             resetModal.classList.remove('hidden');
@@ -1618,7 +1838,7 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             });
         }
 
-        // ... (showReportDownloadModal, hideReportDownloadModal, handleReportDownload, handleReportTypeChange - 內容不變) ...
+        // MODIFICATION: 報表下載 Modal 顯示/隱藏與邏輯切換
         function showReportDownloadModal() {
             console.log("顯示報表下載 Modal");
             const today = new Date();
@@ -1675,8 +1895,8 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
                 reportPeriodInput.max = new Date().getFullYear();
             }
         }
-        
-        // ... (showAddDeptModal, hideAddDeptModal, confirmAddDept - 內容不變) ...
+        // ... (analysis modal functions 不變) ...
+
         function showAddDeptModal() {
             newDeptNameInput.value = '';
             addDeptError.classList.add('hidden');
@@ -1734,36 +1954,12 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             analysisModal.classList.add('hidden');
         }
         
-        // *** MODIFICATION: 顯示分析 Modal 時，重置 Tabs ***
         function showAnalysisResultsModal(yearMonth) {
             analysisResultsTitle.textContent = `${yearMonth} 月度統計分析報告`;
             analysisLoading.style.display = 'flex'; // 顯示主載入
             analysisContent.classList.add('hidden'); // 隱藏內容
-            
-            // 重置 Tabs
-            if (dataReportContent) dataReportContent.classList.remove('hidden');
-            if (chartVisualizationContent) chartVisualizationContent.classList.add('hidden');
-            if (tabBtnReport) tabBtnReport.classList.add('active');
-            if (tabBtnChart) tabBtnChart.classList.remove('active');
-            
-            // 清空舊內容
-            if (analysisSection1) analysisSection1.innerHTML = '';
-            if (analysisSection2) analysisSection2.innerHTML = '';
-            if (aiSuggestionContent) aiSuggestionContent.innerHTML = '';
-            
-            // 銷毀舊圖表
-            if (chartMonthlyTrend) chartMonthlyTrend.destroy();
-            if (chartCampusDonut) chartCampusDonut.destroy();
-            if (chartTopUnits) chartTopUnits.destroy();
-            if (chartSendReceive) chartSendReceive.destroy();
-            chartMonthlyTrend = chartCampusDonut = chartTopUnits = chartSendReceive = null;
-            if (chartMonthlyTrendDiv) chartMonthlyTrendDiv.innerHTML = '';
-            if (chartCampusDonutDiv) chartCampusDonutDiv.innerHTML = '';
-            if (chartTopUnitsDiv) chartTopUnitsDiv.innerHTML = '';
-            if (chartSendReceiveDiv) chartSendReceiveDiv.innerHTML = '';
-
-            if (aiSuggestionLoading) aiSuggestionLoading.style.display = 'flex'; // 顯示 AI 載入
-            
+            aiSuggestionContent.innerHTML = ''; // 清空 AI 內容
+            aiSuggestionLoading.style.display = 'flex'; // 顯示 AI 載入
             analysisResultsModal.classList.remove('hidden');
             // 確保 lucide icons 被渲染
             if (typeof lucide !== 'undefined' && lucide.createIcons) {
@@ -1776,8 +1972,7 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
         }
 
 
-        // --- 11. Firebase 初始化與資料綁定 ---
-        // ... (displayError, handleDataLoad, initFirebase - 內容不變) ...
+        // --- 11. Firebase 初始化與資料綁定 (*** 核心修改 ***) ---
         function displayError(message) {
             console.error("錯誤:", message);
             if (errorMessageDiv) {
@@ -1864,8 +2059,8 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             onAuthStateChanged(auth, (user) => {
                 console.log("onAuthStateChanged 觸發");
                 if (user) {
-                    console.log("Firebase 認證成功, User ID:", user.uid);
-                    userId = user.uid;
+                    console.log("Firebase 認證成功 (匿名), User ID:", user.uid);
+                    userId = user.uid; // 記錄下來，但不用於路徑
 
                     if (unsubscribeSnapshot) {
                         console.log("停止舊的 Snapshot 監聽...");
@@ -1874,17 +2069,22 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
                     }
 
                     try {
-                        dbRef = doc(db, "artifacts", appId, "users", userId, "mailData", "singleton");
-                        console.log("Firestore 文件路徑:", `artifacts/${appId}/users/${userId}/mailData/singleton`);
+                        // *** 核心修改：使用共享路徑 ***
+                        // 舊路徑: doc(db, "artifacts", appId, "users", userId, "mailData", "singleton");
+                        // 新路徑:
+                        const appDataPath = `artifacts/${appId}/mailData/singleton`;
+                        dbRef = doc(db, "artifacts", appId, "mailData", "singleton");
+                        
+                        console.log("Firestore 文件路徑 (共享):", appDataPath);
 
-                        console.log("正在設定 Firestore Snapshot 監聽...");
+                        console.log("正在設定 Firestore Snapshot 監聽 (共享)...");
                         unsubscribeSnapshot = onSnapshot(dbRef, (docSnap) => {
-                            console.log("收到 Snapshot 更新");
+                            console.log("收到 Snapshot 更新 (共享)");
                             if (docSnap.exists()) {
-                                console.log("文件存在，準備處理資料...");
+                                console.log("共享文件存在，準備處理資料...");
                                 handleDataLoad(docSnap.data());
                             } else {
-                                console.log("Firestore 文件不存在，準備載入預設值。");
+                                console.log("Firestore 共享文件不存在，準備載入預設值。");
                                 handleDataLoad(null);
                             }
                         }, (error) => {
@@ -1917,15 +2117,20 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             });
 
             try {
-                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (token) {
-                    console.log("正在使用 __initial_auth_token 登入...");
-                    await signInWithCustomToken(auth, token);
-                    console.log("使用 Token 登入成功");
+                // 檢查是否已經有匿名使用者，如果沒有才登入
+                if (!auth.currentUser) {
+                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    if (token) {
+                        console.log("正在使用 __initial_auth_token 登入...");
+                        await signInWithCustomToken(auth, token);
+                        console.log("使用 Token 登入成功");
+                    } else {
+                        console.log("未提供 Token 且無現行使用者，正在執行匿名登入...");
+                        await signInAnonymously(auth);
+                        console.log("匿名登入成功");
+                    }
                 } else {
-                    console.log("未提供 Token，正在執行匿名登入...");
-                    await signInAnonymously(auth);
-                    console.log("匿名登入成功");
+                    console.log("偵測到現行使用者，跳過登入步驟。");
                 }
                 console.log("Firebase 登入流程完成。等待 onAuthStateChanged 回應...");
             } catch (error) {
@@ -1937,89 +2142,15 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
         }
 
 
-        // --- 12. 程式啟動點 (*** MODIFICATION: 結構重組 ***) ---
+        // --- 12. 程式啟動點 ---
         function initializeAppListeners() {
             console.log("initializeAppListeners 執行");
-            
-            // *** MODIFICATION: 所有 DOM 抓取移至此處 ***
-            console.log("正在綁定 DOM 元素...");
-            shiftTabsContainer = document.getElementById('shift-tabs-container');
-            departmentGrid = document.getElementById('department-grid');
-            dateInput = document.getElementById('current-date');
-            shiftTotalEl = document.getElementById('shift-total');
-            dayTotalEl = document.getElementById('day-total');
-            toggleEditBtn = document.getElementById('toggle-edit-layout');
-            editLayoutText = document.getElementById('edit-layout-text');
-            exportBtn = document.getElementById('export-excel');
-            resetBtn = document.getElementById('reset-counts');
-            resetModal = document.getElementById('reset-modal');
-            cancelResetBtn = document.getElementById('cancel-reset');
-            confirmResetBtn = document.getElementById('confirm-reset');
-            resetDateDisplay = document.getElementById('reset-date-display');
-            exportReportModalBtn = document.getElementById('export-report-modal-btn');
-            reportDownloadModal = document.getElementById('report-download-modal');
-            cancelReportDownloadBtn = document.getElementById('cancel-report-download');
-            confirmReportDownloadBtn = document.getElementById('confirm-report-download');
-            reportPeriodInput = document.getElementById('report-period-input');
-            reportPeriodLabel = document.getElementById('report-period-label');
-            reportDownloadError = document.getElementById('report-download-error');
-            reportTypeMonth = document.getElementById('report-type-month');
-            reportTypeYear = document.getElementById('report-type-year');
-            addDeptModal = document.getElementById('add-dept-modal');
-            cancelAddDeptBtn = document.getElementById('cancel-add-dept');
-            confirmAddDeptBtn = document.getElementById('confirm-add-dept');
-            newDeptNameInput = document.getElementById('new-dept-name');
-            addDeptError = document.getElementById('add-dept-error');
-            saveDataBtn = document.getElementById('save-data');
-            saveDataText = document.getElementById('save-data-text');
-            loadingIndicator = document.getElementById('loading-indicator');
-            errorMessageDiv = document.getElementById('error-message');
-            showInstructionsBtn = document.getElementById('show-instructions-btn');
-            instructionsPage = document.getElementById('instructions-page');
-            counterPage = document.getElementById('counter-page');
-            backToCounterBtn = document.getElementById('back-to-counter-btn');
-            showAnalysisModalBtn = document.getElementById('show-analysis-modal');
-            analysisModal = document.getElementById('analysis-modal');
-            cancelAnalysisModalBtn = document.getElementById('cancel-analysis-modal');
-            confirmGenerateAnalysisBtn = document.getElementById('confirm-generate-analysis');
-            analysisMonthInput = document.getElementById('analysis-month-input');
-            analysisModalError = document.getElementById('analysis-modal-error');
-            analysisResultsModal = document.getElementById('analysis-results-modal');
-            closeAnalysisResultsBtn = document.getElementById('close-analysis-results');
-            closeAnalysisResultsBottomBtn = document.getElementById('close-analysis-results-bottom');
-            analysisLoading = document.getElementById('analysis-loading');
-            analysisContent = document.getElementById('analysis-content');
-            analysisResultsTitle = document.getElementById('analysis-results-title');
-            tabBtnReport = document.getElementById('tab-btn-report');
-            tabBtnChart = document.getElementById('tab-btn-chart');
-            dataReportContent = document.getElementById('data-report-content');
-            chartVisualizationContent = document.getElementById('chart-visualization-content');
-            analysisSection1 = document.getElementById('analysis-section-1');
-            analysisSection2 = document.getElementById('analysis-section-2');
-            analysisSection3 = document.getElementById('analysis-section-3');
-            aiSuggestionLoading = document.getElementById('ai-suggestion-loading');
-            aiSuggestionContent = document.getElementById('ai-suggestion-content');
-            chartMonthlyTrendDiv = document.getElementById('chart-monthly-trend');
-            chartCampusDonutDiv = document.getElementById('chart-campus-donut');
-            chartTopUnitsDiv = document.getElementById('chart-top-units');
-            chartSendReceiveDiv = document.getElementById('chart-send-receive');
-            console.log("DOM 元素綁定完成。");
-
-            // *** MODIFICATION: 增加核心 DOM 檢查 ***
-            if (!departmentGrid || !loadingIndicator || !dateInput || !shiftTabsContainer) {
-                console.error("【嚴重錯誤】一個或多個核心 DOM 元素未找到。應用程式無法啟動。");
-                displayError("【嚴重錯誤】頁面核心元件載入失敗，請強制重新整理 (Ctrl+F5)。");
-                return;
-            }
-
-            // ---------------------------------
-            // 核心啟動邏輯 (現在是安全的)
-            // ---------------------------------
-
             if (dateInput) {
                 dateInput.value = getFormattedDate(new Date());
                 state.currentDate = dateInput.value;
                 console.log("初始日期設定為:", state.currentDate);
+            } else {
+                console.error("找不到日期輸入框元素！");
             }
             
             console.log("渲染初始班次分頁...");
@@ -2049,7 +2180,7 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
                 dateInput.addEventListener('change', (e) => {
                     console.log("日期變更觸發");
                     if (!isDataLoaded) {
-                        console.log("資料尚未載入，忽略日期變更事件");
+                        console.log("資料尚未載入，忽略日期變K_change事件");
                         return;
                     }
                     state.currentDate = e.target.value;
@@ -2064,7 +2195,7 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             if (cancelResetBtn) cancelResetBtn.addEventListener('click', hideResetModal);
             if (confirmResetBtn) confirmResetBtn.addEventListener('click', resetCurrentDateCounts);
             
-            // 報表下載事件綁定
+            // MODIFICATION: 報表下載事件綁定
             if (exportReportModalBtn) exportReportModalBtn.addEventListener('click', showReportDownloadModal);
             if (cancelReportDownloadBtn) cancelReportDownloadBtn.addEventListener('click', hideReportDownloadModal);
             if (confirmReportDownloadBtn) confirmReportDownloadBtn.addEventListener('click', handleReportDownload);
@@ -2085,26 +2216,6 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
             if (confirmGenerateAnalysisBtn) confirmGenerateAnalysisBtn.addEventListener('click', handleGenerateAnalysis);
             if (closeAnalysisResultsBtn) closeAnalysisResultsBtn.addEventListener('click', hideAnalysisResultsModal);
             if (closeAnalysisResultsBottomBtn) closeAnalysisResultsBottomBtn.addEventListener('click', hideAnalysisResultsModal);
-
-            // 分析 Modal Tab 事件
-            if (tabBtnReport) {
-                tabBtnReport.addEventListener('click', () => {
-                    dataReportContent.classList.remove('hidden');
-                    chartVisualizationContent.classList.add('hidden');
-                    tabBtnReport.classList.add('active');
-                    tabBtnChart.classList.remove('active');
-                });
-            }
-            if (tabBtnChart) {
-                tabBtnChart.addEventListener('click', () => {
-                    dataReportContent.classList.add('hidden');
-                    chartVisualizationContent.classList.remove('hidden');
-                    tabBtnReport.classList.remove('active');
-                    tabBtnChart.classList.add('active');
-                    // 關鍵：觸發 resize 事件強制圖表重繪
-                    window.dispatchEvent(new Event('resize'));
-                });
-            }
 
             
             console.log("事件監聽器綁定完成");
@@ -2127,3 +2238,5 @@ ${topUnitsData.map(u => `    - ${u.unit}: ${u.total} 件`).join('\n')}
     </script>
 </body>
 </html>
+
+
